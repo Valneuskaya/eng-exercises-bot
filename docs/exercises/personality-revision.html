@@ -171,62 +171,54 @@
   .quiz-option.incorrect-opt { border-color: #ef5350; background: #fce4ec; color: #c62828; }
   .quiz-option.disabled { pointer-events: none; }
 
-  /* ===== Tap to match ===== */
-  .match-section { margin-bottom: 16px; }
-
-  .match-section h3 {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--tg-theme-hint-color, #999);
+  /* ===== Gap fill ===== */
+  .gap-item {
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
     margin-bottom: 10px;
+    transition: border-color 0.3s;
   }
 
-  .match-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  .gap-item.correct { border-color: #4caf50; background: #f1f8e9; }
+  .gap-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+
+  .gap-sentence {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    line-height: 1.7;
   }
 
-  .match-chip {
-    padding: 10px 16px;
-    background: var(--tg-theme-bg-color, #f8f7ff);
+  .gap-input {
+    width: 160px;
+    padding: 6px 10px;
     border: 2px solid #e0dcff;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.2s;
-    user-select: none;
-  }
-
-  .match-chip:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
-  .match-chip.selected-chip { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
-  .match-chip.matched { opacity: 0.4; pointer-events: none; }
-  .match-chip.correct-chip { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; opacity: 1; }
-  .match-chip.incorrect-chip { border-color: #ef5350; background: #fce4ec; color: #c62828; opacity: 1; }
-
-  .pairs-list {
-    margin-top: 16px;
-  }
-
-  .pair-item {
-    padding: 10px 14px;
-    background: var(--tg-theme-bg-color, #f8f7ff);
     border-radius: 8px;
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    border: 2px solid transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
   }
 
-  .pair-item .pair-phrase { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
-  .pair-item .pair-arrow { color: var(--tg-theme-hint-color, #999); margin: 0 8px; }
-  .pair-item .pair-category { flex: 1; }
-  .pair-item .pair-remove { cursor: pointer; color: #ef5350; font-weight: 700; margin-left: 8px; }
-  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; }
-  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; }
+  .gap-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .gap-input.correct-input { border-color: #4caf50; background: #e8f5e9; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: #fce4ec; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .gap-answer {
+    display: none;
+    font-size: 0.85rem;
+    color: #4caf50;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .gap-answer.show { display: block; }
 
   /* Results */
   .final-results {
@@ -248,9 +240,9 @@
 
   .results-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
-    max-width: 500px;
+    max-width: 400px;
     margin: 0 auto 20px;
   }
 
@@ -274,6 +266,7 @@
     .exercise { padding: 20px; }
     .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
     .quiz-options { flex-direction: column; gap: 6px; }
+    .gap-input { width: 140px; }
   }
 </style>
 </head>
@@ -285,8 +278,7 @@
 
   <div class="nav">
     <button class="nav-btn active" onclick="showExercise(0)">1. Phrases<span class="check"> &#10003;</span></button>
-    <button class="nav-btn" onclick="showExercise(1)">2. Categories<span class="check"> &#10003;</span></button>
-    <button class="nav-btn" onclick="showExercise(2)">3. Adjectives<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Adjectives<span class="check"> &#10003;</span></button>
   </div>
 
   <!-- EXERCISE 1: Personality Phrases -->
@@ -303,10 +295,10 @@
     <div id="quiz1-items"></div>
   </div>
 
-  <!-- EXERCISE 2: Categories (tap-to-match) -->
+  <!-- EXERCISE 2: Adjectives (gap-fill) -->
   <div class="exercise" id="ex2">
-    <h2>Exercise 2: Categories</h2>
-    <p class="instructions">Tap a phrase, then tap its category to make a pair.</p>
+    <h2>Exercise 2: Adjectives</h2>
+    <p class="instructions">Read the sentence and type the missing adjective. The first letter is given.</p>
     <div class="score-bar">
       <span class="score-text" id="score2">0 / 10</span>
       <div class="btn-group">
@@ -314,29 +306,7 @@
         <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
       </div>
     </div>
-    <div class="match-section">
-      <h3>Phrases</h3>
-      <div class="match-grid" id="phrase-chips"></div>
-    </div>
-    <div class="match-section">
-      <h3>Categories</h3>
-      <div class="match-grid" id="category-chips"></div>
-    </div>
-    <div class="pairs-list" id="pairs-list"></div>
-  </div>
-
-  <!-- EXERCISE 3: Adjectives -->
-  <div class="exercise" id="ex3">
-    <h2>Exercise 3: Adjectives</h2>
-    <p class="instructions">Read the description and choose the correct adjective.</p>
-    <div class="score-bar">
-      <span class="score-text" id="score3">0 / 10</span>
-      <div class="btn-group">
-        <button class="btn btn-check" onclick="checkEx3()">Check</button>
-        <button class="btn btn-reset" onclick="resetEx3()">Reset</button>
-      </div>
-    </div>
-    <div id="quiz3-items"></div>
+    <div id="gap-items"></div>
   </div>
 
   <!-- RESULTS -->
@@ -344,8 +314,7 @@
     <h2>Results</h2>
     <div class="results-grid">
       <div class="result-card"><div class="label">Phrases</div><div class="value" id="r1">-</div></div>
-      <div class="result-card"><div class="label">Categories</div><div class="value" id="r2">-</div></div>
-      <div class="result-card"><div class="label">Adjectives</div><div class="value" id="r3">-</div></div>
+      <div class="result-card"><div class="label">Adjectives</div><div class="value" id="r2">-</div></div>
     </div>
     <div class="total-score" id="total-score"></div>
     <br>
@@ -376,40 +345,25 @@ const quiz1Data = [
   { def: "You prefer to stay alone and don\u2019t share much about yourself", correct: "keep yourself to yourself", wrong: "the life of the party" }
 ];
 
-const matchData = [
-  { phrase: "a social butterfly", category: "Sociability" },
-  { phrase: "the life of the party", category: "Sociability" },
-  { phrase: "march to the beat of your own drum", category: "Independence" },
-  { phrase: "a bit of a character", category: "Independence" },
-  { phrase: "have a great sense of humor", category: "Humor" },
-  { phrase: "a good laugh", category: "Humor" },
-  { phrase: "go with the flow", category: "Attitude" },
-  { phrase: "take things in stride", category: "Attitude" },
-  { phrase: "a creature of habit", category: "Habits" },
-  { phrase: "a night owl", category: "Habits" }
-];
-
-const categories = ["Sociability", "Independence", "Humor", "Attitude", "Habits"];
-
-const quiz3Data = [
-  { def: "Always has time when you\u2019ve got a problem, understands and wants to help", correct: "sympathetic", wrong: "naive" },
-  { def: "Takes a long time to make up his mind, careful to avoid danger", correct: "cautious", wrong: "flexible" },
-  { def: "Thought his first job would be easy and people would be nice", correct: "naive", wrong: "moody" },
-  { def: "Seems honest and sincere", correct: "genuine", wrong: "mean" },
-  { def: "Friendly and enjoys meeting people", correct: "outgoing", wrong: "cautious" },
-  { def: "Not very kind, often laughed at students when they made mistakes", correct: "mean", wrong: "trustworthy" },
-  { def: "Adapts quickly to new situations and doesn\u2019t mind change", correct: "flexible", wrong: "eccentric" },
-  { def: "Acts a bit strange sometimes and wears the oddest clothes", correct: "eccentric", wrong: "outgoing" },
-  { def: "You can tell her a secret and she\u2019ll never tell anyone else", correct: "trustworthy", wrong: "sympathetic" },
-  { def: "Always seems unhappy or suddenly gets angry for no reason", correct: "moody", wrong: "genuine" }
+const gapData = [
+  { sentence: "My friend always has time for me when I\u2019ve got a problem. She seems to understand and wants to help. She\u2019s very", hint: "s", answer: "sympathetic" },
+  { sentence: "My colleague always takes a long time to make up his mind. He wants to think about everything carefully before making a decision. He\u2019s quite", hint: "c", answer: "cautious" },
+  { sentence: "When he started his first job, he thought everything would be easy and that all his colleagues would be really nice to him. He was so", hint: "n", answer: "naive" },
+  { sentence: "Everything about him seems honest and sincere. What you see is what you get. He\u2019s very", hint: "g", answer: "genuine" },
+  { sentence: "She\u2019s really friendly and she enjoys meeting new people. She\u2019s really", hint: "o", answer: "outgoing" },
+  { sentence: "My old school teacher was not very kind. She often laughed at students when they made mistakes. She was quite", hint: "m", answer: "mean" },
+  { sentence: "She can adapt to almost any situation and doesn\u2019t mind when plans change. She\u2019s very", hint: "f", answer: "flexible" },
+  { sentence: "He acts a bit strange sometimes and wears the oddest clothes. He\u2019s a bit", hint: "e", answer: "eccentric" },
+  { sentence: "I can tell her any secret and I know she\u2019ll never tell anyone else. She\u2019s completely", hint: "t", answer: "trustworthy" },
+  { sentence: "One minute he\u2019s happy, the next he\u2019s angry for no reason. He\u2019s so", hint: "m", answer: "moody" }
 ];
 
 // ===================== NAVIGATION =====================
 
-const exercises = ['ex1', 'ex2', 'ex3'];
+const exercises = ['ex1', 'ex2'];
 const navBtns = document.querySelectorAll('.nav-btn');
-let scores = [0, 0, 0];
-let checked = [false, false, false];
+let scores = [0, 0];
+let checked = [false, false];
 
 function showExercise(idx) {
   document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
@@ -444,8 +398,8 @@ function buildEx1() {
     div.innerHTML = `
       <div class="quiz-definition">${i + 1}. ${item.def}</div>
       <div class="quiz-options">
-        <button class="quiz-option" data-ex="1" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
-        <button class="quiz-option" data-ex="1" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
+        <button class="quiz-option" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
+        <button class="quiz-option" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
       </div>
     `;
     container.appendChild(div);
@@ -454,18 +408,16 @@ function buildEx1() {
 
 function selectOption(btn) {
   if (btn.classList.contains('disabled')) return;
-  const exNum = btn.dataset.ex;
   const qIdx = btn.dataset.q;
-  document.querySelectorAll(`.quiz-option[data-ex="${exNum}"][data-q="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll(`.quiz-option[data-q="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  if (exNum === '1') ex1Selections[qIdx] = btn.dataset.correct === 'true';
-  if (exNum === '3') ex3Selections[qIdx] = btn.dataset.correct === 'true';
+  ex1Selections[qIdx] = btn.dataset.correct === 'true';
 }
 
 function checkEx1() {
   let score = 0;
   quiz1Data.forEach((_, i) => {
-    const buttons = document.querySelectorAll(`.quiz-option[data-ex="1"][data-q="${i}"]`);
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="${i}"]`);
     const wrapper = buttons[0].closest('.quiz-item');
     buttons.forEach(btn => {
       btn.classList.add('disabled');
@@ -491,7 +443,7 @@ function checkEx1() {
 function resetEx1() {
   ex1Selections = new Array(quiz1Data.length).fill(null);
   quiz1Data.forEach((_, i) => {
-    const buttons = document.querySelectorAll(`.quiz-option[data-ex="1"][data-q="${i}"]`);
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="${i}"]`);
     buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
     buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
   });
@@ -500,105 +452,40 @@ function resetEx1() {
   navBtns[0].classList.remove('done');
 }
 
-// ===================== EXERCISE 2: Categories (Tap-to-Match) =====================
-
-let selectedPhrase = null;
-let selectedCategory = null;
-let pairs = []; // [{phraseIdx, categoryName}]
+// ===================== EXERCISE 2: Adjectives (Gap-fill) =====================
 
 function buildEx2() {
-  const phraseContainer = document.getElementById('phrase-chips');
-  const categoryContainer = document.getElementById('category-chips');
-
-  const shuffledPhrases = shuffle(matchData.map((d, i) => ({ ...d, idx: i })));
-
-  shuffledPhrases.forEach(item => {
-    const chip = document.createElement('span');
-    chip.className = 'match-chip';
-    chip.textContent = item.phrase;
-    chip.dataset.idx = item.idx;
-    chip.dataset.type = 'phrase';
-    chip.onclick = () => tapChip(chip, 'phrase');
-    phraseContainer.appendChild(chip);
-  });
-
-  // Category chips - each category can be tapped multiple times (2 phrases per category)
-  categories.forEach(cat => {
-    const chip = document.createElement('span');
-    chip.className = 'match-chip';
-    chip.textContent = cat;
-    chip.dataset.category = cat;
-    chip.dataset.type = 'category';
-    chip.onclick = () => tapChip(chip, 'category');
-    categoryContainer.appendChild(chip);
-  });
-}
-
-function tapChip(chip, type) {
-  if (chip.classList.contains('matched')) return;
-
-  if (type === 'phrase') {
-    document.querySelectorAll('#phrase-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
-    chip.classList.add('selected-chip');
-    selectedPhrase = chip;
-  } else {
-    document.querySelectorAll('#category-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
-    chip.classList.add('selected-chip');
-    selectedCategory = chip;
-  }
-
-  if (selectedPhrase && selectedCategory) {
-    const phraseIdx = parseInt(selectedPhrase.dataset.idx);
-    const categoryName = selectedCategory.dataset.category;
-    pairs.push({ phraseIdx, categoryName });
-    selectedPhrase.classList.remove('selected-chip');
-    selectedPhrase.classList.add('matched');
-    selectedCategory.classList.remove('selected-chip');
-    selectedPhrase = null;
-    selectedCategory = null;
-    renderPairs();
-  }
-}
-
-function renderPairs() {
-  const list = document.getElementById('pairs-list');
-  list.innerHTML = '';
-  pairs.forEach((p, i) => {
+  const container = document.getElementById('gap-items');
+  gapData.forEach((item, i) => {
     const div = document.createElement('div');
-    div.className = 'pair-item';
+    div.className = 'gap-item';
+    const underscores = '_'.repeat(item.answer.length - 1);
     div.innerHTML = `
-      <span class="pair-phrase">${matchData[p.phraseIdx].phrase}</span>
-      <span class="pair-arrow">&rarr;</span>
-      <span class="pair-category">${p.categoryName}</span>
-      <span class="pair-remove" onclick="removePair(${i})">&times;</span>
+      <div class="gap-sentence">${i + 1}. ${item.sentence} <input type="text" class="gap-input" data-idx="${i}" placeholder="${item.hint}${underscores}" autocomplete="off" autocapitalize="off" spellcheck="false">.</div>
+      <div class="gap-answer" id="answer-${i}">Correct answer: ${item.answer}</div>
     `;
-    list.appendChild(div);
+    container.appendChild(div);
   });
-  document.getElementById('score2').textContent = `${pairs.length} / 10 paired`;
-}
-
-function removePair(idx) {
-  const p = pairs[idx];
-  document.querySelectorAll(`#phrase-chips .match-chip[data-idx="${p.phraseIdx}"]`).forEach(c => c.classList.remove('matched'));
-  pairs.splice(idx, 1);
-  renderPairs();
 }
 
 function checkEx2() {
   let score = 0;
-  const pairItems = document.querySelectorAll('#pairs-list .pair-item');
-  pairs.forEach((p, i) => {
-    const div = pairItems[i];
-    if (matchData[p.phraseIdx].category === p.categoryName) {
+  gapData.forEach((item, i) => {
+    const input = document.querySelector(`.gap-input[data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    const userAnswer = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+
+    if (userAnswer === item.answer.toLowerCase()) {
       score++;
-      div.classList.add('correct-pair');
+      wrapper.classList.add('correct');
+      input.classList.add('correct-input');
     } else {
-      div.classList.add('incorrect-pair');
+      wrapper.classList.add('incorrect');
+      input.classList.add('incorrect-input');
+      document.getElementById(`answer-${i}`).classList.add('show');
     }
   });
-  // Disable further interaction
-  document.querySelectorAll('#phrase-chips .match-chip, #category-chips .match-chip').forEach(c => c.style.pointerEvents = 'none');
-  document.querySelectorAll('.pair-remove').forEach(r => r.style.display = 'none');
   scores[1] = score;
   checked[1] = true;
   document.getElementById('score2').textContent = `${score} / 10`;
@@ -607,78 +494,17 @@ function checkEx2() {
 }
 
 function resetEx2() {
-  pairs = [];
-  selectedPhrase = null;
-  selectedCategory = null;
-  document.querySelectorAll('#phrase-chips .match-chip, #category-chips .match-chip').forEach(c => {
-    c.classList.remove('matched', 'selected-chip', 'correct-chip', 'incorrect-chip');
-    c.style.pointerEvents = '';
+  gapData.forEach((_, i) => {
+    const input = document.querySelector(`.gap-input[data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    wrapper.classList.remove('correct', 'incorrect');
+    document.getElementById(`answer-${i}`).classList.remove('show');
   });
-  document.getElementById('pairs-list').innerHTML = '';
   scores[1] = 0; checked[1] = false;
   document.getElementById('score2').textContent = '0 / 10';
   navBtns[1].classList.remove('done');
-}
-
-// ===================== EXERCISE 3: Adjectives =====================
-
-let ex3Selections = new Array(quiz3Data.length).fill(null);
-
-function buildEx3() {
-  const container = document.getElementById('quiz3-items');
-  quiz3Data.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'quiz-item';
-    const options = Math.random() > 0.5
-      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
-      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
-    div.innerHTML = `
-      <div class="quiz-definition">${i + 1}. ${item.def}</div>
-      <div class="quiz-options">
-        <button class="quiz-option" data-ex="3" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
-        <button class="quiz-option" data-ex="3" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function checkEx3() {
-  let score = 0;
-  quiz3Data.forEach((_, i) => {
-    const buttons = document.querySelectorAll(`.quiz-option[data-ex="3"][data-q="${i}"]`);
-    const wrapper = buttons[0].closest('.quiz-item');
-    buttons.forEach(btn => {
-      btn.classList.add('disabled');
-      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
-    });
-    if (ex3Selections[i] === true) {
-      score++;
-      wrapper.classList.add('correct');
-    } else {
-      wrapper.classList.add('incorrect');
-      buttons.forEach(btn => {
-        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
-      });
-    }
-  });
-  scores[2] = score;
-  checked[2] = true;
-  document.getElementById('score3').textContent = `${score} / 10`;
-  navBtns[2].classList.add('done');
-  checkAllDone();
-}
-
-function resetEx3() {
-  ex3Selections = new Array(quiz3Data.length).fill(null);
-  quiz3Data.forEach((_, i) => {
-    const buttons = document.querySelectorAll(`.quiz-option[data-ex="3"][data-q="${i}"]`);
-    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
-    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
-  });
-  scores[2] = 0; checked[2] = false;
-  document.getElementById('score3').textContent = '0 / 10';
-  navBtns[2].classList.remove('done');
 }
 
 // ===================== RESULTS =====================
@@ -691,16 +517,14 @@ function checkAllDone() {
       document.getElementById('results').classList.add('active');
       document.getElementById('r1').textContent = `${scores[0]}/8`;
       document.getElementById('r2').textContent = `${scores[1]}/10`;
-      document.getElementById('r3').textContent = `${scores[2]}/10`;
       const total = scores.reduce((a, b) => a + b, 0);
-      const max = 28;
+      const max = 18;
       document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
 
-      // Send results to Telegram if available
       if (tg) {
         tg.sendData(JSON.stringify({
           exercise: 'personality-revision',
-          scores: { phrases: scores[0], categories: scores[1], adjectives: scores[2] },
+          scores: { phrases: scores[0], adjectives: scores[1] },
           total: total,
           max: max
         }));
@@ -710,7 +534,7 @@ function checkAllDone() {
 }
 
 function resetAll() {
-  resetEx1(); resetEx2(); resetEx3();
+  resetEx1(); resetEx2();
   document.getElementById('results').classList.remove('active');
   showExercise(0);
 }
@@ -718,7 +542,6 @@ function resetAll() {
 // ===================== INIT =====================
 buildEx1();
 buildEx2();
-buildEx3();
 </script>
 
 </body>
