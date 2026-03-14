@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personality & Character</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check {
+    display: none;
+    margin-left: 4px;
+  }
+
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: #e8e6ff; color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* ===== Multiple choice ===== */
+  .quiz-item {
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; }
+  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+
+  .quiz-definition {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .quiz-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .quiz-option {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid #e0dcff;
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .quiz-option.correct-opt { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .quiz-option.disabled { pointer-events: none; }
+
+  /* ===== Tap to match ===== */
+  .match-section { margin-bottom: 16px; }
+
+  .match-section h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--tg-theme-hint-color, #999);
+    margin-bottom: 10px;
+  }
+
+  .match-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .match-chip {
+    padding: 10px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border: 2px solid #e0dcff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .match-chip:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-chip.selected-chip { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .match-chip.matched { opacity: 0.4; pointer-events: none; }
+  .match-chip.correct-chip { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; opacity: 1; }
+  .match-chip.incorrect-chip { border-color: #ef5350; background: #fce4ec; color: #c62828; opacity: 1; }
+
+  .pairs-list {
+    margin-top: 16px;
+  }
+
+  .pair-item {
+    padding: 10px 14px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+  }
+
+  .pair-item .pair-phrase { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+  .pair-item .pair-arrow { color: var(--tg-theme-hint-color, #999); margin: 0 8px; }
+  .pair-item .pair-category { flex: 1; }
+  .pair-item .pair-remove { cursor: pointer; color: #ef5350; font-weight: 700; margin-left: 8px; }
+  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; }
+  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .quiz-options { flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Personality & Character</h1>
+  <p class="subtitle">Vocabulary revision</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Phrases<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Categories<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(2)">3. Adjectives<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Personality Phrases -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: Personality Phrases</h2>
+    <p class="instructions">Read the description and choose the correct phrase.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 8</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      </div>
+    </div>
+    <div id="quiz1-items"></div>
+  </div>
+
+  <!-- EXERCISE 2: Categories (tap-to-match) -->
+  <div class="exercise" id="ex2">
+    <h2>Exercise 2: Categories</h2>
+    <p class="instructions">Tap a phrase, then tap its category to make a pair.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score2">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+      </div>
+    </div>
+    <div class="match-section">
+      <h3>Phrases</h3>
+      <div class="match-grid" id="phrase-chips"></div>
+    </div>
+    <div class="match-section">
+      <h3>Categories</h3>
+      <div class="match-grid" id="category-chips"></div>
+    </div>
+    <div class="pairs-list" id="pairs-list"></div>
+  </div>
+
+  <!-- EXERCISE 3: Adjectives -->
+  <div class="exercise" id="ex3">
+    <h2>Exercise 3: Adjectives</h2>
+    <p class="instructions">Read the description and choose the correct adjective.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score3">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx3()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx3()">Reset</button>
+      </div>
+    </div>
+    <div id="quiz3-items"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Phrases</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">Categories</div><div class="value" id="r2">-</div></div>
+      <div class="result-card"><div class="label">Adjectives</div><div class="value" id="r3">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="resetAll()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+
+const quiz1Data = [
+  { def: "You like having friends around and enjoy being with people", correct: "a people person", wrong: "a creature of habit" },
+  { def: "You can\u2019t stand getting up early and being cheerful in the morning", correct: "not a morning person", wrong: "down-to-earth" },
+  { def: "You\u2019re quick, clever and you make people laugh", correct: "witty", wrong: "spontaneous" },
+  { def: "You get an idea and do it immediately, no hesitation", correct: "spontaneous", wrong: "cautious" },
+  { def: "You\u2019re fun to be with and everyone enjoys your company", correct: "a good laugh", wrong: "a computer geek" },
+  { def: "You\u2019re very practical and realistic, not pretentious", correct: "down-to-earth", wrong: "eccentric" },
+  { def: "You spend hours in front of your computer", correct: "a computer geek", wrong: "a social butterfly" },
+  { def: "You prefer to stay alone and don\u2019t share much about yourself", correct: "keep yourself to yourself", wrong: "the life of the party" }
+];
+
+const matchData = [
+  { phrase: "a social butterfly", category: "Sociability" },
+  { phrase: "the life of the party", category: "Sociability" },
+  { phrase: "march to the beat of your own drum", category: "Independence" },
+  { phrase: "a bit of a character", category: "Independence" },
+  { phrase: "have a great sense of humor", category: "Humor" },
+  { phrase: "a good laugh", category: "Humor" },
+  { phrase: "go with the flow", category: "Attitude" },
+  { phrase: "take things in stride", category: "Attitude" },
+  { phrase: "a creature of habit", category: "Habits" },
+  { phrase: "a night owl", category: "Habits" }
+];
+
+const categories = ["Sociability", "Independence", "Humor", "Attitude", "Habits"];
+
+const quiz3Data = [
+  { def: "Always has time when you\u2019ve got a problem, understands and wants to help", correct: "sympathetic", wrong: "naive" },
+  { def: "Takes a long time to make up his mind, careful to avoid danger", correct: "cautious", wrong: "flexible" },
+  { def: "Thought his first job would be easy and people would be nice", correct: "naive", wrong: "moody" },
+  { def: "Seems honest and sincere", correct: "genuine", wrong: "mean" },
+  { def: "Friendly and enjoys meeting people", correct: "outgoing", wrong: "cautious" },
+  { def: "Not very kind, often laughed at students when they made mistakes", correct: "mean", wrong: "trustworthy" },
+  { def: "Adapts quickly to new situations and doesn\u2019t mind change", correct: "flexible", wrong: "eccentric" },
+  { def: "Acts a bit strange sometimes and wears the oddest clothes", correct: "eccentric", wrong: "outgoing" },
+  { def: "You can tell her a secret and she\u2019ll never tell anyone else", correct: "trustworthy", wrong: "sympathetic" },
+  { def: "Always seems unhappy or suddenly gets angry for no reason", correct: "moody", wrong: "genuine" }
+];
+
+// ===================== NAVIGATION =====================
+
+const exercises = ['ex1', 'ex2', 'ex3'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0, 0];
+let checked = [false, false, false];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exercises[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== UTILS =====================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== EXERCISE 1: Personality Phrases =====================
+
+let ex1Selections = new Array(quiz1Data.length).fill(null);
+
+function buildEx1() {
+  const container = document.getElementById('quiz1-items');
+  quiz1Data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    const options = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="quiz-definition">${i + 1}. ${item.def}</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-ex="1" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
+        <button class="quiz-option" data-ex="1" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectOption(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const exNum = btn.dataset.ex;
+  const qIdx = btn.dataset.q;
+  document.querySelectorAll(`.quiz-option[data-ex="${exNum}"][data-q="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  if (exNum === '1') ex1Selections[qIdx] = btn.dataset.correct === 'true';
+  if (exNum === '3') ex3Selections[qIdx] = btn.dataset.correct === 'true';
+}
+
+function checkEx1() {
+  let score = 0;
+  quiz1Data.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-ex="1"][data-q="${i}"]`);
+    const wrapper = buttons[0].closest('.quiz-item');
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (ex1Selections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+    }
+  });
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 8`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx1() {
+  ex1Selections = new Array(quiz1Data.length).fill(null);
+  quiz1Data.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-ex="1"][data-q="${i}"]`);
+    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
+    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 8';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: Categories (Tap-to-Match) =====================
+
+let selectedPhrase = null;
+let selectedCategory = null;
+let pairs = []; // [{phraseIdx, categoryName}]
+
+function buildEx2() {
+  const phraseContainer = document.getElementById('phrase-chips');
+  const categoryContainer = document.getElementById('category-chips');
+
+  const shuffledPhrases = shuffle(matchData.map((d, i) => ({ ...d, idx: i })));
+
+  shuffledPhrases.forEach(item => {
+    const chip = document.createElement('span');
+    chip.className = 'match-chip';
+    chip.textContent = item.phrase;
+    chip.dataset.idx = item.idx;
+    chip.dataset.type = 'phrase';
+    chip.onclick = () => tapChip(chip, 'phrase');
+    phraseContainer.appendChild(chip);
+  });
+
+  // Category chips - each category can be tapped multiple times (2 phrases per category)
+  categories.forEach(cat => {
+    const chip = document.createElement('span');
+    chip.className = 'match-chip';
+    chip.textContent = cat;
+    chip.dataset.category = cat;
+    chip.dataset.type = 'category';
+    chip.onclick = () => tapChip(chip, 'category');
+    categoryContainer.appendChild(chip);
+  });
+}
+
+function tapChip(chip, type) {
+  if (chip.classList.contains('matched')) return;
+
+  if (type === 'phrase') {
+    document.querySelectorAll('#phrase-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
+    chip.classList.add('selected-chip');
+    selectedPhrase = chip;
+  } else {
+    document.querySelectorAll('#category-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
+    chip.classList.add('selected-chip');
+    selectedCategory = chip;
+  }
+
+  if (selectedPhrase && selectedCategory) {
+    const phraseIdx = parseInt(selectedPhrase.dataset.idx);
+    const categoryName = selectedCategory.dataset.category;
+    pairs.push({ phraseIdx, categoryName });
+    selectedPhrase.classList.remove('selected-chip');
+    selectedPhrase.classList.add('matched');
+    selectedCategory.classList.remove('selected-chip');
+    selectedPhrase = null;
+    selectedCategory = null;
+    renderPairs();
+  }
+}
+
+function renderPairs() {
+  const list = document.getElementById('pairs-list');
+  list.innerHTML = '';
+  pairs.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'pair-item';
+    div.innerHTML = `
+      <span class="pair-phrase">${matchData[p.phraseIdx].phrase}</span>
+      <span class="pair-arrow">&rarr;</span>
+      <span class="pair-category">${p.categoryName}</span>
+      <span class="pair-remove" onclick="removePair(${i})">&times;</span>
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById('score2').textContent = `${pairs.length} / 10 paired`;
+}
+
+function removePair(idx) {
+  const p = pairs[idx];
+  document.querySelectorAll(`#phrase-chips .match-chip[data-idx="${p.phraseIdx}"]`).forEach(c => c.classList.remove('matched'));
+  pairs.splice(idx, 1);
+  renderPairs();
+}
+
+function checkEx2() {
+  let score = 0;
+  const pairItems = document.querySelectorAll('#pairs-list .pair-item');
+  pairs.forEach((p, i) => {
+    const div = pairItems[i];
+    if (matchData[p.phraseIdx].category === p.categoryName) {
+      score++;
+      div.classList.add('correct-pair');
+    } else {
+      div.classList.add('incorrect-pair');
+    }
+  });
+  // Disable further interaction
+  document.querySelectorAll('#phrase-chips .match-chip, #category-chips .match-chip').forEach(c => c.style.pointerEvents = 'none');
+  document.querySelectorAll('.pair-remove').forEach(r => r.style.display = 'none');
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 10`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx2() {
+  pairs = [];
+  selectedPhrase = null;
+  selectedCategory = null;
+  document.querySelectorAll('#phrase-chips .match-chip, #category-chips .match-chip').forEach(c => {
+    c.classList.remove('matched', 'selected-chip', 'correct-chip', 'incorrect-chip');
+    c.style.pointerEvents = '';
+  });
+  document.getElementById('pairs-list').innerHTML = '';
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 10';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== EXERCISE 3: Adjectives =====================
+
+let ex3Selections = new Array(quiz3Data.length).fill(null);
+
+function buildEx3() {
+  const container = document.getElementById('quiz3-items');
+  quiz3Data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    const options = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="quiz-definition">${i + 1}. ${item.def}</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-ex="3" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
+        <button class="quiz-option" data-ex="3" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkEx3() {
+  let score = 0;
+  quiz3Data.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-ex="3"][data-q="${i}"]`);
+    const wrapper = buttons[0].closest('.quiz-item');
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (ex3Selections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+    }
+  });
+  scores[2] = score;
+  checked[2] = true;
+  document.getElementById('score3').textContent = `${score} / 10`;
+  navBtns[2].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx3() {
+  ex3Selections = new Array(quiz3Data.length).fill(null);
+  quiz3Data.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-ex="3"][data-q="${i}"]`);
+    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
+    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
+  });
+  scores[2] = 0; checked[2] = false;
+  document.getElementById('score3').textContent = '0 / 10';
+  navBtns[2].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    setTimeout(() => {
+      document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+      navBtns.forEach(b => b.classList.remove('active'));
+      document.getElementById('results').classList.add('active');
+      document.getElementById('r1').textContent = `${scores[0]}/8`;
+      document.getElementById('r2').textContent = `${scores[1]}/10`;
+      document.getElementById('r3').textContent = `${scores[2]}/10`;
+      const total = scores.reduce((a, b) => a + b, 0);
+      const max = 28;
+      document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+      // Send results to Telegram if available
+      if (tg) {
+        tg.sendData(JSON.stringify({
+          exercise: 'personality-revision',
+          scores: { phrases: scores[0], categories: scores[1], adjectives: scores[2] },
+          total: total,
+          max: max
+        }));
+      }
+    }, 600);
+  }
+}
+
+function resetAll() {
+  resetEx1(); resetEx2(); resetEx3();
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildEx1();
+buildEx2();
+buildEx3();
+</script>
+
+</body>
+</html>
