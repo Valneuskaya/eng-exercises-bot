@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Exercises</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 600px; margin: 0 auto; }
+
+  h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+
+  .exercise-card {
+    display: block;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .exercise-card:active { transform: scale(0.98); }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--tg-theme-link-color, #6c63ff);
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--tg-theme-hint-color, #888);
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--tg-theme-hint-color, #aaa);
+  }
+
+  .tag {
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--tg-theme-hint-color, #999);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>English Exercises</h1>
+  <p class="subtitle">Choose an exercise to start</p>
+
+  <div id="exercise-list"></div>
+</div>
+
+<script>
+  // Initialize Telegram Web App
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  // Exercise registry — add new exercises here
+  const exercises = [
+    {
+      id: "revision-mar13",
+      title: "Revision: Feb — Dec",
+      desc: "Idioms, phrasal verbs, prefixes, pitch & presentations",
+      level: "B1+",
+      type: "Business",
+      questions: 44,
+      file: "exercises/revision-mar13.html"
+    }
+  ];
+
+  function renderList() {
+    const list = document.getElementById('exercise-list');
+
+    if (exercises.length === 0) {
+      list.innerHTML = '<div class="empty">No exercises yet. Check back soon!</div>';
+      return;
+    }
+
+    exercises.forEach(ex => {
+      const card = document.createElement('a');
+      card.className = 'exercise-card';
+      card.href = ex.file;
+      card.innerHTML = `
+        <div class="card-title">${ex.title}</div>
+        <div class="card-desc">${ex.desc}</div>
+        <div class="card-meta">
+          <span class="tag">${ex.level}</span>
+          <span class="tag">${ex.type}</span>
+          <span class="tag">${ex.questions} questions</span>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  renderList();
+</script>
+
+</body>
+</html>
