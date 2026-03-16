@@ -506,7 +506,25 @@ function resetEx2() {
 
 function checkAllDone() {
   if (checked.every(c => c)) {
-    setTimeout(() => {
+    // Show "See Results" button instead of auto-switching
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    // Append to whichever exercise is currently visible
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(resultsBtn);
+    }
+  }
+}
+
+function showResults() {
       document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
       navBtns.forEach(b => b.classList.remove('active'));
       document.getElementById('results').classList.add('active');
@@ -524,8 +542,6 @@ function checkAllDone() {
           max: max
         }));
       }
-    }, 600);
-  }
 }
 
 function resetAll() {

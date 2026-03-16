@@ -808,28 +808,41 @@ function resetEx5() {
 
 function checkAllDone() {
   if (checked.every(c => c)) {
-    setTimeout(() => {
-      document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
-      navBtns.forEach(b => b.classList.remove('active'));
-      document.getElementById('results').classList.add('active');
-      document.getElementById('r1').textContent = `${scores[0]}/10`;
-      document.getElementById('r3').textContent = `${scores[1]}/12`;
-      document.getElementById('r4').textContent = `${scores[2]}/10`;
-      document.getElementById('r5').textContent = `${scores[3]}/12`;
-      const total = scores.reduce((a, b) => a + b, 0);
-      const max = 44;
-      document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(resultsBtn);
+    }
+  }
+}
 
-      // Send results to Telegram if available
-      if (tg) {
-        tg.sendData(JSON.stringify({
-          exercise: 'revision-mar13',
-          scores: { quiz: scores[0], phrasal: scores[1], prefixes: scores[2], gapfill: scores[3] },
-          total: total,
-          max: max
-        }));
-      }
-    }, 600);
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/10`;
+  document.getElementById('r3').textContent = `${scores[1]}/12`;
+  document.getElementById('r4').textContent = `${scores[2]}/10`;
+  document.getElementById('r5').textContent = `${scores[3]}/12`;
+  const total = scores.reduce((a, b) => a + b, 0);
+  const max = 44;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  if (tg) {
+    tg.sendData(JSON.stringify({
+      exercise: 'revision-mar13',
+      scores: { quiz: scores[0], phrasal: scores[1], prefixes: scores[2], gapfill: scores[3] },
+      total: total,
+      max: max
+    }));
   }
 }
 
