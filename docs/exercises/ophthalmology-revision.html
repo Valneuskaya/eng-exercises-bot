@@ -348,16 +348,16 @@ const quiz1Data = [
 ];
 
 const gapData = [
-  { sentence: "Complex cases require doctors to c__________e with other specialists.", answer: "collaborate" },
-  { sentence: "The doctor must carefully m_____e the case and collect additional information.", answer: "manage" },
-  { sentence: "Modern d________c equipment helps identify problems at an early stage.", answer: "diagnostic" },
-  { sentence: "It is important to avoid c__________g distance vision.", answer: "compromising" },
-  { sentence: "Patients p______g 60 may be at risk for visual discomfort.", answer: "pushing" },
-  { sentence: "Early i__________n can significantly improve long-term outcomes.", answer: "intervention" },
-  { sentence: "Such patients are often l__-h______g fruit.", answer: "low-hanging" },
-  { sentence: "The l________e of modern ophthalmology continues to evolve.", answer: "landscape" },
-  { sentence: "I r__y on my own clinical experience when making decisions.", answer: "rely" },
-  { sentence: "Continuous professional d__________t is essential in modern medicine.", answer: "development" }
+  { before: "Complex cases require doctors to", after: "with other specialists.", hint: "c__________e", answer: "collaborate" },
+  { before: "The doctor must carefully", after: "the case and collect additional information.", hint: "m_____e", answer: "manage" },
+  { before: "Modern", after: "equipment helps identify problems at an early stage.", hint: "d________c", answer: "diagnostic" },
+  { before: "It is important to avoid", after: "distance vision.", hint: "c__________g", answer: "compromising" },
+  { before: "Patients", after: "60 may be at risk for visual discomfort.", hint: "p______g", answer: "pushing" },
+  { before: "Early", after: "can significantly improve long-term outcomes.", hint: "i__________n", answer: "intervention" },
+  { before: "Such patients are often", after: "fruit.", hint: "l__-h______g", answer: "low-hanging" },
+  { before: "The", after: "of modern ophthalmology continues to evolve.", hint: "l________e", answer: "landscape" },
+  { before: "I", after: "on my own clinical experience when making decisions.", hint: "r__y", answer: "rely" },
+  { before: "Continuous professional", after: "is essential in modern medicine.", hint: "d__________t", answer: "development" }
 ];
 
 // ===================== NAVIGATION =====================
@@ -450,13 +450,8 @@ function buildEx2() {
   gapData.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'gap-item';
-    // Build placeholder from the gap pattern in the sentence
-    const gapMatch = item.sentence.match(/[a-z][\-_]+[a-z]/i);
-    const placeholder = gapMatch ? gapMatch[0] : item.answer;
-    // Replace the gap pattern in the sentence with an input
-    const parts = item.sentence.split(gapMatch[0]);
     div.innerHTML = `
-      <div class="gap-sentence">${i + 1}. ${parts[0]}<input type="text" class="gap-input" data-idx="${i}" placeholder="${placeholder}" autocomplete="off" autocapitalize="off" spellcheck="false">${parts[1]}</div>
+      <div class="gap-sentence">${i + 1}. ${item.before} <input type="text" class="gap-input" data-idx="${i}" placeholder="${item.hint}" autocomplete="off" autocapitalize="off" spellcheck="false"> ${item.after}</div>
       <div class="gap-answer" id="answer-${i}">Correct answer: ${item.answer}</div>
     `;
     container.appendChild(div);
