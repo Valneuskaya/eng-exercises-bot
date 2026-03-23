@@ -138,8 +138,8 @@
     transition: border-color 0.3s;
   }
 
-  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; }
-  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
+  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; color: #c62828; }
 
   .quiz-definition {
     font-size: 0.95rem;
@@ -225,8 +225,12 @@
   .pair-item .pair-arrow { color: var(--tg-theme-hint-color, #999); margin: 0 8px; }
   .pair-item .pair-meaning { flex: 1; }
   .pair-item .pair-remove { cursor: pointer; color: #ef5350; font-weight: 700; margin-left: 8px; }
-  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; }
-  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; }
+  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
+  .pair-item.correct-pair .pair-verb { color: #1b5e20; }
+  .pair-item.correct-pair .pair-arrow { color: #4caf50; }
+  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .pair-item.incorrect-pair .pair-verb { color: #b71c1c; }
+  .pair-item.incorrect-pair .pair-arrow { color: #ef5350; }
 
   /* ===== EXERCISE 3: Prefix dropdowns ===== */
   .prefix-item {
@@ -242,8 +246,8 @@
     transition: all 0.3s;
   }
 
-  .prefix-item.correct { border-color: #4caf50; background: #f1f8e9; }
-  .prefix-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+  .prefix-item.correct { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
+  .prefix-item.incorrect { border-color: #ef5350; background: #fce4ec; color: #c62828; }
 
   .prefix-select {
     padding: 6px 10px;
