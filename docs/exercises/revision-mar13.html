@@ -125,21 +125,21 @@
   }
 
   .btn-check:hover { opacity: 0.85; }
-  .btn-reset { background: #e8e6ff; color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
   .btn-reset:hover { opacity: 0.85; }
   .btn-group { display: flex; gap: 8px; }
 
   /* ===== EXERCISE 1: Multiple choice ===== */
   .quiz-item {
     padding: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
     border-radius: 10px;
     margin-bottom: 10px;
     transition: border-color 0.3s;
   }
 
-  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
-  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .quiz-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
 
   .quiz-definition {
     font-size: 0.95rem;
@@ -155,7 +155,7 @@
   .quiz-option {
     flex: 1;
     padding: 10px 16px;
-    border: 2px solid #e0dcff;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 8px;
     background: var(--tg-theme-bg-color, #f8f7ff);
     cursor: pointer;
@@ -167,8 +167,8 @@
 
   .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
   .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
-  .quiz-option.correct-opt { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
-  .quiz-option.incorrect-opt { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .quiz-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
   .quiz-option.disabled { pointer-events: none; }
 
   /* ===== EXERCISE 2: Tap to match ===== */
@@ -191,7 +191,7 @@
   .match-chip {
     padding: 10px 16px;
     background: var(--tg-theme-bg-color, #f8f7ff);
-    border: 2px solid #e0dcff;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.85rem;
@@ -202,8 +202,8 @@
   .match-chip:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
   .match-chip.selected-chip { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
   .match-chip.matched { opacity: 0.4; pointer-events: none; }
-  .match-chip.correct-chip { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; opacity: 1; }
-  .match-chip.incorrect-chip { border-color: #ef5350; background: #fce4ec; color: #c62828; opacity: 1; }
+  .match-chip.correct-chip { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; opacity: 1; }
+  .match-chip.incorrect-chip { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; opacity: 1; }
 
   .pairs-list {
     margin-top: 16px;
@@ -225,17 +225,17 @@
   .pair-item .pair-arrow { color: var(--tg-theme-hint-color, #999); margin: 0 8px; }
   .pair-item .pair-meaning { flex: 1; }
   .pair-item .pair-remove { cursor: pointer; color: #ef5350; font-weight: 700; margin-left: 8px; }
-  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
-  .pair-item.correct-pair .pair-verb { color: #1b5e20; }
+  .pair-item.correct-pair { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .pair-item.correct-pair .pair-verb { color: #4caf50; }
   .pair-item.correct-pair .pair-arrow { color: #4caf50; }
-  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; color: #c62828; }
-  .pair-item.incorrect-pair .pair-verb { color: #b71c1c; }
+  .pair-item.incorrect-pair { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .pair-item.incorrect-pair .pair-verb { color: #ef5350; }
   .pair-item.incorrect-pair .pair-arrow { color: #ef5350; }
 
   /* ===== EXERCISE 3: Prefix dropdowns ===== */
   .prefix-item {
     padding: 14px 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
     border-radius: 10px;
     margin-bottom: 10px;
     display: flex;
@@ -246,12 +246,12 @@
     transition: all 0.3s;
   }
 
-  .prefix-item.correct { border-color: #4caf50; background: #f1f8e9; color: #2e7d32; }
-  .prefix-item.incorrect { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .prefix-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .prefix-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
 
   .prefix-select {
     padding: 6px 10px;
-    border: 2px solid #e0dcff;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 6px;
     font-family: inherit;
     font-size: 0.95rem;
