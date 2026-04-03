@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feelings & Intensifiers</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check {
+    display: none;
+    margin-left: 4px;
+  }
+
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* ===== Matching exercise ===== */
+  .match-definitions {
+    margin-bottom: 20px;
+  }
+
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: border-color 0.3s, background 0.3s;
+    cursor: pointer;
+  }
+
+  .match-row.selected-def {
+    border-color: var(--tg-theme-button-color, #6c63ff);
+    background: rgba(108,99,255,0.06);
+  }
+
+  .match-row.matched {
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  .match-row.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .match-row.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .match-num {
+    font-weight: 700;
+    color: var(--tg-theme-button-color, #6c63ff);
+    min-width: 24px;
+  }
+
+  .match-def {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .match-answer-tag {
+    display: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .match-answer-tag.show { display: inline-block; }
+
+  .match-correct-tag {
+    display: none;
+    font-size: 0.8rem;
+    color: #66bb6a;
+    font-weight: 500;
+  }
+
+  .match-correct-tag.show { display: inline-block; }
+
+  .match-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 12px;
+  }
+
+  .match-chip {
+    padding: 8px 14px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .match-chip:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-chip.used { opacity: 0.35; pointer-events: none; }
+
+  /* ===== Multiple choice ===== */
+  .quiz-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .quiz-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+
+  .quiz-definition {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .quiz-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .quiz-option {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .quiz-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .quiz-option.disabled { pointer-events: none; }
+
+  /* ===== Gap fill ===== */
+  .gap-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .gap-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+
+  .gap-sentence {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    line-height: 1.7;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .gap-input {
+    width: 160px;
+    padding: 6px 10px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
+  }
+
+  .gap-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .gap-answer {
+    display: none;
+    font-size: 0.85rem;
+    color: #66bb6a;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .gap-answer.show { display: block; }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .quiz-options { flex-direction: column; gap: 6px; }
+    .gap-input { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Feelings & Intensifiers</h1>
+  <p class="subtitle">Vocabulary & grammar revision</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Match<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. -ed/-ing<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(2)">3. Intensifiers<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(3)">4. Upgrade<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Match definitions -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: Match the Definitions</h2>
+    <p class="instructions">Tap a definition, then tap the matching phrase from the pool below.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkMatch()">Check</button>
+        <button class="btn btn-reset" onclick="resetMatch()">Reset</button>
+      </div>
+    </div>
+    <div class="match-definitions" id="match-defs"></div>
+    <div class="match-pool" id="match-pool"></div>
+  </div>
+
+  <!-- EXERCISE 2: -ed / -ing -->
+  <div class="exercise" id="ex2">
+    <h2>Exercise 2: -ed or -ing?</h2>
+    <p class="instructions">Choose the correct adjective form.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score2">0 / 7</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEdIng()">Check</button>
+        <button class="btn btn-reset" onclick="resetEdIng()">Reset</button>
+      </div>
+    </div>
+    <div id="eding-items"></div>
+  </div>
+
+  <!-- EXERCISE 3: Intensifiers -->
+  <div class="exercise" id="ex3">
+    <h2>Exercise 3: Choose the Intensifier</h2>
+    <p class="instructions">Choose the correct intensifier for each sentence.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score3">0 / 8</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkIntensifiers()">Check</button>
+        <button class="btn btn-reset" onclick="resetIntensifiers()">Reset</button>
+      </div>
+    </div>
+    <div id="intensifier-items"></div>
+  </div>
+
+  <!-- EXERCISE 4: Upgrade -->
+  <div class="exercise" id="ex4">
+    <h2>Exercise 4: Upgrade the Sentence</h2>
+    <p class="instructions">Replace the underlined adjective with an extreme one.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score4">0 / 6</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkUpgrade()">Check</button>
+        <button class="btn btn-reset" onclick="resetUpgrade()">Reset</button>
+      </div>
+    </div>
+    <div id="upgrade-items"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Match</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">-ed/-ing</div><div class="value" id="r2">-</div></div>
+      <div class="result-card"><div class="label">Intensifiers</div><div class="value" id="r3">-</div></div>
+      <div class="result-card"><div class="label">Upgrade</div><div class="value" id="r4">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="resetAll()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+
+const matchData = [
+  { def: "disappointed and angry", answer: "frustrated" },
+  { def: "felt embarrassed", answer: "wished the earth would swallow me up" },
+  { def: "thrilled", answer: "over the moon" },
+  { def: "disgusted me", answer: "made my stomach turn" },
+  { def: "glad it was finished", answer: "relieved" },
+  { def: "very interested", answer: "fascinated" },
+  { def: "felt nervous", answer: "was shaking like a leaf" },
+  { def: "petrified", answer: "felt scared out of my wits" },
+  { def: "admiring", answer: "impressed" },
+  { def: "embarrassing", answer: "awkward" }
+];
+
+const edIngData = [
+  { sentence: "I find history really", correct: "fascinating", wrong: "fascinated" },
+  { sentence: "The instructions were so", correct: "confusing", wrong: "confused" },
+  { sentence: "It's ___ when the Wi-Fi keeps dropping.", correct: "frustrating", wrong: "frustrated" },
+  { sentence: "The documentary was absolutely", correct: "fascinating", wrong: "fascinated" },
+  { sentence: "He was ___ when he forgot her name.", correct: "embarrassed", wrong: "embarrassing" },
+  { sentence: "The whole day was", correct: "exhausting", wrong: "exhausted" },
+  { sentence: "I was ___ when I got the news.", correct: "thrilled", wrong: "thrilling" }
+];
+
+const intensifierData = [
+  { sentence: "I was ___ fascinated by the story.", correct: "absolutely", wrong: "very" },
+  { sentence: "The weather was ___ cold yesterday.", correct: "very", wrong: "absolutely" },
+  { sentence: "She was ___ furious when she found out.", correct: "absolutely", wrong: "very" },
+  { sentence: "The food was ___ awful.", correct: "really", wrong: "very" },
+  { sentence: "I'm ___ exhausted after that run.", correct: "totally", wrong: "very" },
+  { sentence: "He was ___ scared of the dog.", correct: "very", wrong: "absolutely" },
+  { sentence: "The view was ___ good.", correct: "really", wrong: "absolutely" },
+  { sentence: "It was ___ freezing outside.", correct: "absolutely", wrong: "very" }
+];
+
+const upgradeData = [
+  { prompt: "I was really <u>tired</u> after the exam.", hint: "e", answer: "exhausted" },
+  { prompt: "The film was really <u>good</u>.", hint: "f", answer: "fantastic", alt: ["wonderful"] },
+  { prompt: "She was really <u>angry</u> about it.", hint: "f", answer: "furious" },
+  { prompt: "The water was really <u>cold</u>.", hint: "f", answer: "freezing" },
+  { prompt: "We were really <u>surprised</u> by the news.", hint: "a", answer: "amazed", alt: ["astonished"] },
+  { prompt: "The concert was really <u>bad</u>.", hint: "a", answer: "awful", alt: ["terrible"] }
+];
+
+// ===================== NAVIGATION =====================
+
+const exerciseIds = ['ex1', 'ex2', 'ex3', 'ex4'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0, 0, 0];
+let checked = [false, false, false, false];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exerciseIds[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== UTILS =====================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== EXERCISE 1: MATCHING =====================
+
+let selectedDef = null;
+let matchSelections = {};
+
+function buildMatch() {
+  const defsContainer = document.getElementById('match-defs');
+  const poolContainer = document.getElementById('match-pool');
+
+  matchData.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'match-row';
+    row.dataset.idx = i;
+    row.onclick = () => selectDef(i);
+    row.innerHTML = `
+      <span class="match-num">${i + 1}.</span>
+      <span class="match-def">${item.def}</span>
+      <span class="match-answer-tag" id="match-tag-${i}"></span>
+      <span class="match-correct-tag" id="match-correct-${i}"></span>
+    `;
+    defsContainer.appendChild(row);
+  });
+
+  const shuffled = shuffle(matchData.map(d => d.answer));
+  shuffled.forEach(answer => {
+    const chip = document.createElement('button');
+    chip.className = 'match-chip';
+    chip.textContent = answer;
+    chip.dataset.answer = answer;
+    chip.onclick = () => selectChip(answer, chip);
+    poolContainer.appendChild(chip);
+  });
+}
+
+function selectDef(idx) {
+  if (checked[0]) return;
+  const row = document.querySelector(`.match-row[data-idx="${idx}"]`);
+  if (row.classList.contains('matched')) {
+    // Unmatch: free up the chip
+    const tag = document.getElementById(`match-tag-${idx}`);
+    const prevAnswer = matchSelections[idx];
+    if (prevAnswer) {
+      const chip = document.querySelector(`.match-chip[data-answer="${CSS.escape(prevAnswer)}"]`);
+      if (chip) chip.classList.remove('used');
+      delete matchSelections[idx];
+      tag.textContent = '';
+      tag.classList.remove('show');
+      row.classList.remove('matched');
+    }
+  }
+  document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected-def'));
+  row.classList.add('selected-def');
+  selectedDef = idx;
+}
+
+function selectChip(answer, chip) {
+  if (checked[0] || selectedDef === null) return;
+  if (chip.classList.contains('used')) return;
+
+  // If this def already had an answer, free the old chip
+  if (matchSelections[selectedDef] !== undefined) {
+    const oldChip = document.querySelector(`.match-chip[data-answer="${CSS.escape(matchSelections[selectedDef])}"]`);
+    if (oldChip) oldChip.classList.remove('used');
+  }
+
+  matchSelections[selectedDef] = answer;
+  chip.classList.add('used');
+
+  const tag = document.getElementById(`match-tag-${selectedDef}`);
+  tag.textContent = answer;
+  tag.classList.add('show');
+
+  const row = document.querySelector(`.match-row[data-idx="${selectedDef}"]`);
+  row.classList.remove('selected-def');
+  row.classList.add('matched');
+
+  selectedDef = null;
+}
+
+function checkMatch() {
+  let score = 0;
+  matchData.forEach((item, i) => {
+    const row = document.querySelector(`.match-row[data-idx="${i}"]`);
+    const userAnswer = matchSelections[i];
+    if (userAnswer && userAnswer.toLowerCase() === item.answer.toLowerCase()) {
+      score++;
+      row.classList.add('correct');
+    } else {
+      row.classList.add('incorrect');
+      const correctTag = document.getElementById(`match-correct-${i}`);
+      correctTag.textContent = item.answer;
+      correctTag.classList.add('show');
+    }
+    row.style.cursor = 'default';
+  });
+  document.querySelectorAll('.match-chip').forEach(c => c.style.pointerEvents = 'none');
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 10`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetMatch() {
+  selectedDef = null;
+  matchSelections = {};
+  matchData.forEach((_, i) => {
+    const row = document.querySelector(`.match-row[data-idx="${i}"]`);
+    row.classList.remove('correct', 'incorrect', 'matched', 'selected-def');
+    row.style.cursor = 'pointer';
+    const tag = document.getElementById(`match-tag-${i}`);
+    tag.textContent = '';
+    tag.classList.remove('show');
+    const correctTag = document.getElementById(`match-correct-${i}`);
+    correctTag.textContent = '';
+    correctTag.classList.remove('show');
+  });
+  document.querySelectorAll('.match-chip').forEach(c => {
+    c.classList.remove('used');
+    c.style.pointerEvents = 'auto';
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 10';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: -ED / -ING =====================
+
+let edIngSelections = new Array(edIngData.length).fill(null);
+
+function buildEdIng() {
+  const container = document.getElementById('eding-items');
+  edIngData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    const hasBlank = item.sentence.includes('___');
+    let display;
+    if (hasBlank) {
+      display = item.sentence.replace('___', '______');
+    } else {
+      display = item.sentence + ' ______.';
+    }
+    const options = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="quiz-definition">${i + 1}. ${display}</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-q="eding-${i}" data-correct="${options[0].isCorrect}" onclick="selectEdIng(this)">${options[0].text}</button>
+        <button class="quiz-option" data-q="eding-${i}" data-correct="${options[1].isCorrect}" onclick="selectEdIng(this)">${options[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectEdIng(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qKey = btn.dataset.q;
+  const idx = parseInt(qKey.split('-')[1]);
+  document.querySelectorAll(`.quiz-option[data-q="${qKey}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  edIngSelections[idx] = btn.dataset.correct === 'true';
+}
+
+function checkEdIng() {
+  let score = 0;
+  edIngData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="eding-${i}"]`);
+    const wrapper = buttons[0].closest('.quiz-item');
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (edIngSelections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+    }
+  });
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 7`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEdIng() {
+  edIngSelections = new Array(edIngData.length).fill(null);
+  edIngData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="eding-${i}"]`);
+    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
+    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
+  });
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 7';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== EXERCISE 3: INTENSIFIERS =====================
+
+let intensifierSelections = new Array(intensifierData.length).fill(null);
+
+function buildIntensifiers() {
+  const container = document.getElementById('intensifier-items');
+  intensifierData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    const display = item.sentence.replace('___', '______');
+    const options = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="quiz-definition">${i + 1}. ${display}</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-q="intens-${i}" data-correct="${options[0].isCorrect}" onclick="selectIntensifier(this)">${options[0].text}</button>
+        <button class="quiz-option" data-q="intens-${i}" data-correct="${options[1].isCorrect}" onclick="selectIntensifier(this)">${options[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectIntensifier(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qKey = btn.dataset.q;
+  const idx = parseInt(qKey.split('-')[1]);
+  document.querySelectorAll(`.quiz-option[data-q="${qKey}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  intensifierSelections[idx] = btn.dataset.correct === 'true';
+}
+
+function checkIntensifiers() {
+  let score = 0;
+  intensifierData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="intens-${i}"]`);
+    const wrapper = buttons[0].closest('.quiz-item');
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (intensifierSelections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+    }
+  });
+  scores[2] = score;
+  checked[2] = true;
+  document.getElementById('score3').textContent = `${score} / 8`;
+  navBtns[2].classList.add('done');
+  checkAllDone();
+}
+
+function resetIntensifiers() {
+  intensifierSelections = new Array(intensifierData.length).fill(null);
+  intensifierData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="intens-${i}"]`);
+    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
+    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
+  });
+  scores[2] = 0; checked[2] = false;
+  document.getElementById('score3').textContent = '0 / 8';
+  navBtns[2].classList.remove('done');
+}
+
+// ===================== EXERCISE 4: UPGRADE =====================
+
+function buildUpgrade() {
+  const container = document.getElementById('upgrade-items');
+  upgradeData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'gap-item';
+    const underscores = '_'.repeat(item.answer.length - 1);
+    div.innerHTML = `
+      <div class="gap-sentence">${i + 1}. ${item.prompt} &rarr; <input type="text" class="gap-input" data-idx="${i}" placeholder="${item.hint}${underscores}" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="gap-answer" id="upgrade-answer-${i}">Correct answer: ${item.answer}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkUpgrade() {
+  let score = 0;
+  upgradeData.forEach((item, i) => {
+    const input = document.querySelector(`.gap-input[data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    const userAnswer = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+
+    const allCorrect = [item.answer.toLowerCase()];
+    if (item.alt) item.alt.forEach(a => allCorrect.push(a.toLowerCase()));
+
+    if (allCorrect.includes(userAnswer)) {
+      score++;
+      wrapper.classList.add('correct');
+      input.classList.add('correct-input');
+    } else {
+      wrapper.classList.add('incorrect');
+      input.classList.add('incorrect-input');
+      document.getElementById(`upgrade-answer-${i}`).classList.add('show');
+    }
+  });
+  scores[3] = score;
+  checked[3] = true;
+  document.getElementById('score4').textContent = `${score} / 6`;
+  navBtns[3].classList.add('done');
+  checkAllDone();
+}
+
+function resetUpgrade() {
+  upgradeData.forEach((_, i) => {
+    const input = document.querySelector(`.gap-input[data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    wrapper.classList.remove('correct', 'incorrect');
+    document.getElementById(`upgrade-answer-${i}`).classList.remove('show');
+  });
+  scores[3] = 0; checked[3] = false;
+  document.getElementById('score4').textContent = '0 / 6';
+  navBtns[3].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(resultsBtn);
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/10`;
+  document.getElementById('r2').textContent = `${scores[1]}/7`;
+  document.getElementById('r3').textContent = `${scores[2]}/8`;
+  document.getElementById('r4').textContent = `${scores[3]}/6`;
+  const total = scores.reduce((a, b) => a + b, 0);
+  const max = 31;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  if (tg) {
+    tg.sendData(JSON.stringify({
+      exercise: 'feelings-intensifiers',
+      scores: { match: scores[0], edIng: scores[1], intensifiers: scores[2], upgrade: scores[3] },
+      total: total,
+      max: max
+    }));
+  }
+}
+
+function resetAll() {
+  resetMatch(); resetEdIng(); resetIntensifiers(); resetUpgrade();
+  document.getElementById('results').classList.remove('active');
+  const btn = document.getElementById('see-results-btn');
+  if (btn) btn.remove();
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildMatch();
+buildEdIng();
+buildIntensifiers();
+buildUpgrade();
+</script>
+
+</body>
+</html>
