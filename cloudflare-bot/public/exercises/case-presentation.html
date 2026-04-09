@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Presentation</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; }
+
+  h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check { display: none; margin-left: 4px; }
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* Gap-fill text block */
+  .gap-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 2.2;
+    color: var(--tg-theme-text-color, #1a1a2e);
+    margin-bottom: 16px;
+  }
+
+  .gap-input {
+    width: 120px;
+    padding: 4px 8px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
+  }
+
+  .gap-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .correction {
+    display: none;
+    font-size: 0.78rem;
+    color: #66bb6a;
+    font-weight: 600;
+  }
+
+  .correction.show { display: inline; }
+
+  /* Word bank */
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .word-bank-label {
+    width: 100%;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #999);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .wb-word {
+    padding: 4px 12px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border: 1px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  /* Match exercise */
+  .match-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .match-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .match-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .match-term {
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-style: italic;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .match-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .match-option {
+    padding: 10px 14px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .match-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .match-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .match-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .match-option.disabled { pointer-events: none; }
+
+  .match-answer {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .match-answer.show { display: block; }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .gap-input { width: 100px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Case Presentation</h1>
+  <p class="subtitle">Clinical vocabulary for seminars</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Definitions<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Gap-fill<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Match definitions -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: Match the Definition</h2>
+    <p class="instructions">Choose the correct definition for each clinical term.</p>
+
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 8</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      </div>
+    </div>
+
+    <div id="match-items"></div>
+  </div>
+
+  <!-- EXERCISE 2: Gap-fill case text -->
+  <div class="exercise" id="ex2">
+    <h2>Exercise 2: Complete the Case</h2>
+    <p class="instructions">Fill in the gaps in this case presentation. Use the word bank to help you.</p>
+
+    <div class="word-bank">
+      <div class="word-bank-label">Word bank</div>
+      <span class="wb-word">to present</span>
+      <span class="wb-word">to refer</span>
+      <span class="wb-word">on</span>
+      <span class="wb-word">complaint</span>
+      <span class="wb-word">findings</span>
+      <span class="wb-word">to rule out</span>
+      <span class="wb-word">to include</span>
+      <span class="wb-word">to opt</span>
+      <span class="wb-word">follow-up</span>
+      <span class="wb-word">to respond</span>
+      <span class="wb-word">to learn</span>
+    </div>
+
+    <div class="score-bar">
+      <span class="score-text" id="score2">0 / 12</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+      </div>
+    </div>
+
+    <div class="gap-text" id="gap-text"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Definitions</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">Gap-fill</div><div class="value" id="r2">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="fullReset()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+
+// Gap-fill: segments of text with gaps
+const gapSegments = [
+  { text: "I'd like to ", gap: true, id: 0, answer: "present" },
+  { text: " a case of a 58-year-old female who ", gap: false },
+  { text: "", gap: true, id: 1, answer: "presented" },
+  { text: " with gradual loss of peripheral vision. The patient was ", gap: false },
+  { text: "", gap: true, id: 2, answer: "referred" },
+  { text: " to me by her GP after a routine eye check. ", gap: false },
+  { text: "", gap: true, id: 3, answer: "On" },
+  { text: " examination, we found elevated intraocular pressure and changes in the optic nerve. The main ", gap: false },
+  { text: "", gap: true, id: 4, answer: "complaint" },
+  { text: " was progressive visual field loss. Based on the clinical ", gap: false },
+  { text: "", gap: true, id: 5, answer: "findings" },
+  { text: ", the diagnosis was open-angle glaucoma. We were able to ", gap: false },
+  { text: "", gap: true, id: 6, answer: "rule out" },
+  { text: " other conditions such as normal-tension glaucoma through additional testing. The treatment plan ", gap: false },
+  { text: "", gap: true, id: 7, answer: "included" },
+  { text: " prescription eye drops to lower the pressure. We ", gap: false },
+  { text: "", gap: true, id: 8, answer: "opted" },
+  { text: " for conservative management initially. At the three-month ", gap: false },
+  { text: "", gap: true, id: 9, answer: "follow-up" },
+  { text: ", the patient had ", gap: false },
+  { text: "", gap: true, id: 10, answer: "responded" },
+  { text: " well to the treatment \u2014 the pressure had decreased significantly. What I ", gap: false },
+  { text: "", gap: true, id: 11, answer: "learned" },
+  { text: " from this case is the importance of early detection and regular monitoring.", gap: false }
+];
+
+const matchData = [
+  {
+    term: "to present with",
+    correct: "to come to the doctor showing certain symptoms",
+    wrong: ["to explain in more detail", "to choose one option over another"]
+  },
+  {
+    term: "on examination",
+    correct: "during the clinical check",
+    wrong: ["a later appointment to check progress", "to show improvement after treatment"]
+  },
+  {
+    term: "clinical findings",
+    correct: "results of the examination",
+    wrong: ["a list of possible conditions to consider", "to come to the doctor showing certain symptoms"]
+  },
+  {
+    term: "differential diagnosis",
+    correct: "a list of possible conditions to consider",
+    wrong: ["results of the examination", "to eliminate a possible diagnosis"]
+  },
+  {
+    term: "to rule out",
+    correct: "to eliminate a possible diagnosis",
+    wrong: ["to show improvement after treatment", "a list of possible conditions to consider"]
+  },
+  {
+    term: "to respond to treatment",
+    correct: "to show improvement after treatment",
+    wrong: ["to come to the doctor showing certain symptoms", "during the clinical check"]
+  },
+  {
+    term: "follow-up",
+    correct: "a later appointment to check progress",
+    wrong: ["results of the examination", "to eliminate a possible diagnosis"]
+  },
+  {
+    term: "to opt for",
+    correct: "to choose one option over another",
+    wrong: ["to show improvement after treatment", "a later appointment to check progress"]
+  }
+];
+
+// ===================== NAVIGATION =====================
+const exerciseIds = ['ex1', 'ex2'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0];
+let checked = [false, false];
+let mistakes = [];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exerciseIds[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== EXERCISE 1: Match definitions =====================
+let ex1Selections = new Array(matchData.length).fill(null);
+
+function buildEx1() {
+  const container = document.getElementById('match-items');
+  matchData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'match-item';
+    div.id = `m-${i}`;
+    const allOptions = shuffle([item.correct, ...item.wrong]);
+    let optionsHTML = allOptions.map(opt =>
+      `<button class="match-option" data-mq="${i}" data-val="${opt}" onclick="selectMatch(this)">${opt}</button>`
+    ).join('');
+    div.innerHTML = `
+      <div class="match-term">${i + 1}. ${item.term}</div>
+      <div class="match-options">${optionsHTML}</div>
+      <div class="match-answer" id="ma-${i}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectMatch(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qIdx = btn.dataset.mq;
+  document.querySelectorAll(`.match-option[data-mq="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex1Selections[qIdx] = btn.dataset.val;
+}
+
+function checkEx1() {
+  let score = 0;
+  matchData.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.match-option[data-mq="${i}"]`);
+    const wrapper = document.getElementById(`m-${i}`);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.val === item.correct) btn.classList.add('correct-opt');
+    });
+    if (ex1Selections[i] === item.correct) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.val === ex1Selections[i] && ex1Selections[i] !== item.correct) btn.classList.add('incorrect-opt');
+      });
+      const label = document.getElementById(`ma-${i}`);
+      label.textContent = `Correct: ${item.correct}`;
+      label.classList.add('show');
+      mistakes.push(`"${item.term}" \u2192 ${item.correct}`);
+    }
+  });
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 8`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx1() {
+  ex1Selections = new Array(matchData.length).fill(null);
+  matchData.forEach((_, i) => {
+    const wrapper = document.getElementById(`m-${i}`);
+    wrapper.classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.match-option[data-mq="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+    const label = document.getElementById(`ma-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 8';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: Gap-fill =====================
+function buildEx2() {
+  const container = document.getElementById('gap-text');
+  let html = '';
+  gapSegments.forEach(seg => {
+    if (seg.gap) {
+      html += `<input type="text" class="gap-input" data-gid="${seg.id}" placeholder="${seg.id + 1}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
+      html += `<span class="correction" id="corr-${seg.id}"></span>`;
+    } else {
+      html += seg.text;
+    }
+  });
+  container.innerHTML = html;
+}
+
+function checkEx2() {
+  let score = 0;
+  gapSegments.filter(s => s.gap).forEach(seg => {
+    const input = document.querySelector(`.gap-input[data-gid="${seg.id}"]`);
+    const userVal = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+    if (userVal === seg.answer.toLowerCase()) {
+      score++;
+      input.classList.add('correct-input');
+    } else {
+      input.classList.add('incorrect-input');
+      const corr = document.getElementById(`corr-${seg.id}`);
+      corr.textContent = ` ${seg.answer}`;
+      corr.classList.add('show');
+      mistakes.push(`Gap ${seg.id + 1}: \u2192 ${seg.answer}`);
+    }
+  });
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 12`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx2() {
+  gapSegments.filter(s => s.gap).forEach(seg => {
+    const input = document.querySelector(`.gap-input[data-gid="${seg.id}"]`);
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    const corr = document.getElementById(`corr-${seg.id}`);
+    corr.textContent = '';
+    corr.classList.remove('show');
+  });
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 12';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(resultsBtn);
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/8`;
+  document.getElementById('r2').textContent = `${scores[1]}/12`;
+  const total = scores[0] + scores[1];
+  const max = 20;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      exercise: 'case-presentation',
+      scores: { definitions: scores[0], gapFill: scores[1] },
+      total: total, max: max, student: student,
+      mistakes: mistakes
+    })
+  }).catch(() => {});
+}
+
+function fullReset() {
+  resetEx1(); resetEx2();
+  mistakes = [];
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildEx1();
+buildEx2();
+</script>
+
+</body>
+</html>

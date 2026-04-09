@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discussion Phrases</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; }
+
+  h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check { display: none; margin-left: 4px; }
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* Quiz items (categorisation) */
+  .quiz-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .quiz-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .quiz-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .quiz-phrase {
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 10px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .quiz-option {
+    padding: 8px 16px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .quiz-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .quiz-option.disabled { pointer-events: none; }
+
+  .correct-label {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .correct-label.show { display: block; }
+
+  /* Category legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .legend-item {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .legend-item.cat-opinion { background: rgba(108,99,255,0.15); }
+  .legend-item.cat-agree { background: rgba(76,175,80,0.15); }
+  .legend-item.cat-disagree { background: rgba(239,83,80,0.15); }
+  .legend-item.cat-clarify { background: rgba(255,152,0,0.15); }
+  .legend-item.cat-build { background: rgba(33,150,243,0.15); }
+
+  /* Gap-fill MC items (exercise 2) */
+  .gapmc-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .gapmc-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .gapmc-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .gapmc-sentence {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.7;
+    margin-bottom: 10px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .gapmc-sentence .gap-blank {
+    display: inline-block;
+    min-width: 140px;
+    border-bottom: 2px dashed var(--tg-theme-hint-color, #ccc);
+    text-align: center;
+    padding: 0 4px;
+  }
+
+  .gapmc-options {
+    display: flex;
+    gap: 10px;
+  }
+
+  .gapmc-opt {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .gapmc-opt:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .gapmc-opt.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .gapmc-opt.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gapmc-opt.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gapmc-opt.disabled { pointer-events: none; }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .quiz-options { flex-direction: column; gap: 6px; }
+    .quiz-option { width: 100%; }
+    .gapmc-options { flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Discussion Phrases</h1>
+  <p class="subtitle">Seminar & interview language</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Categorise<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Use in context<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Categorisation -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: Categorise the Phrase</h2>
+    <p class="instructions">Read each phrase and choose its function in a discussion.</p>
+
+    <div class="legend">
+      <span class="legend-item cat-opinion">Giving opinion</span>
+      <span class="legend-item cat-agree">Agreeing</span>
+      <span class="legend-item cat-disagree">Disagreeing</span>
+      <span class="legend-item cat-clarify">Asking for clarification</span>
+      <span class="legend-item cat-build">Building on an idea</span>
+    </div>
+
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 15</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      </div>
+    </div>
+
+    <div id="quiz-items"></div>
+  </div>
+
+  <!-- EXERCISE 2: Gap-fill MC -->
+  <div class="exercise" id="ex2">
+    <h2>Exercise 2: Use in Context</h2>
+    <p class="instructions">Choose the correct phrase to complete each sentence.</p>
+
+    <div class="score-bar">
+      <span class="score-text" id="score2">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+      </div>
+    </div>
+
+    <div id="gapmc-items"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Categorise</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">In context</div><div class="value" id="r2">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="fullReset()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+const categories = ['opinion', 'agree', 'disagree', 'clarify', 'build'];
+const categoryLabels = {
+  opinion: 'Giving opinion',
+  agree: 'Agreeing',
+  disagree: 'Disagreeing',
+  clarify: 'Asking for clarification',
+  build: 'Building on an idea'
+};
+
+const quizData = [
+  { phrase: "I would argue that\u2026", answer: "opinion" },
+  { phrase: "Could you elaborate on that?", answer: "clarify" },
+  { phrase: "That\u2019s consistent with what I\u2019ve seen.", answer: "agree" },
+  { phrase: "Following up on what you said, \u2026", answer: "build" },
+  { phrase: "I see your point, but in my practice\u2026", answer: "disagree" },
+  { phrase: "That reminds me of a case where\u2026", answer: "build" },
+  { phrase: "I\u2019m not entirely sure I agree, because\u2026", answer: "disagree" },
+  { phrase: "The way I see it, \u2026", answer: "opinion" },
+  { phrase: "I couldn\u2019t agree more.", answer: "agree" },
+  { phrase: "From a clinical standpoint, \u2026", answer: "opinion" },
+  { phrase: "That\u2019s a valid point.", answer: "agree" },
+  { phrase: "What do you mean by\u2026?", answer: "clarify" },
+  { phrase: "Are you suggesting that\u2026?", answer: "clarify" },
+  { phrase: "To add to that, \u2026", answer: "build" },
+  { phrase: "I understand where you\u2019re coming from, but\u2026", answer: "disagree" }
+];
+
+const gapmcData = [
+  {
+    before: "A: \u201CTelemedicine will replace face-to-face consultations.\u201D",
+    after: " I\u2019ve noticed the same trend in my clinic.",
+    correct: "Absolutely \u2014",
+    wrong: "I\u2019m not entirely sure I agree \u2014"
+  },
+  {
+    before: "A: \u201CPatient education is a waste of time.\u201D",
+    after: " patients who understand their condition are much more compliant.",
+    correct: "I see your point, but in my practice",
+    wrong: "That\u2019s a valid point \u2014"
+  },
+  {
+    before: "",
+    after: " early intervention gives the best outcomes in glaucoma management.",
+    correct: "From a clinical standpoint,",
+    wrong: "I would argue that"
+  },
+  {
+    before: "A: \u201CWe should focus more on prevention.\u201D",
+    after: " in my region, we\u2019ve seen a big improvement since we started screening programmes.",
+    correct: "That\u2019s consistent with what I\u2019ve seen \u2014",
+    wrong: "I understand where you\u2019re coming from, but"
+  },
+  {
+    before: "A: \u201CConservative management is always safer.\u201D",
+    after: " delaying surgery can sometimes lead to worse outcomes.",
+    correct: "I\u2019m not entirely sure I agree, because",
+    wrong: "I couldn\u2019t agree more, because"
+  },
+  {
+    before: "A: \u201CCollaboration between specialists is essential.\u201D",
+    after: " working with a neurologist made all the difference.",
+    correct: "That reminds me of a case where",
+    wrong: "What do you mean by"
+  },
+  {
+    before: "A: \u201CDigital diagnostics are becoming more accurate.\u201D",
+    after: " they can fully replace a clinician\u2019s judgement?",
+    correct: "Are you suggesting that",
+    wrong: "Following up on what you said,"
+  },
+  {
+    before: "",
+    after: " the biggest challenge is not the treatment itself, but patient compliance.",
+    correct: "The way I see it,",
+    wrong: "Could you elaborate on"
+  },
+  {
+    before: "A: \u201CInternational seminars help you learn new techniques.\u201D",
+    after: " they also give you a chance to build a professional network.",
+    correct: "To add to that,",
+    wrong: "From a clinical standpoint,"
+  },
+  {
+    before: "A: \u201CWe use a fully automated workflow.\u201D",
+    after: " How does that work for patients with unusual presentations?",
+    correct: "Could you elaborate on that?",
+    wrong: "That\u2019s a valid point."
+  }
+];
+
+// ===================== NAVIGATION =====================
+const exerciseIds = ['ex1', 'ex2'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0];
+let checked = [false, false];
+let mistakes = [];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exerciseIds[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== EXERCISE 1: Categorisation =====================
+const shuffled = shuffle(quizData);
+let ex1Selections = new Array(shuffled.length).fill(null);
+
+function buildEx1() {
+  const container = document.getElementById('quiz-items');
+  shuffled.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    div.id = `q-${i}`;
+    let optionsHTML = categories.map(cat =>
+      `<button class="quiz-option" data-q="${i}" data-cat="${cat}" onclick="selectCat(this)">${categoryLabels[cat]}</button>`
+    ).join('');
+    div.innerHTML = `
+      <div class="quiz-phrase">${i + 1}. ${item.phrase}</div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="correct-label" id="cl-${i}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectCat(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qIdx = btn.dataset.q;
+  document.querySelectorAll(`.quiz-option[data-q="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex1Selections[qIdx] = btn.dataset.cat;
+}
+
+function checkEx1() {
+  let score = 0;
+  shuffled.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="${i}"]`);
+    const wrapper = document.getElementById(`q-${i}`);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.cat === item.answer) btn.classList.add('correct-opt');
+    });
+    if (ex1Selections[i] === item.answer) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.cat === ex1Selections[i] && ex1Selections[i] !== item.answer) btn.classList.add('incorrect-opt');
+      });
+      const label = document.getElementById(`cl-${i}`);
+      label.textContent = `Correct: ${categoryLabels[item.answer]}`;
+      label.classList.add('show');
+      mistakes.push(`"${item.phrase}" \u2192 ${categoryLabels[item.answer]}`);
+    }
+  });
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 15`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx1() {
+  ex1Selections = new Array(shuffled.length).fill(null);
+  shuffled.forEach((_, i) => {
+    const wrapper = document.getElementById(`q-${i}`);
+    wrapper.classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.quiz-option[data-q="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+    const label = document.getElementById(`cl-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 15';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: Gap-fill MC =====================
+let ex2Selections = new Array(gapmcData.length).fill(null);
+
+function buildEx2() {
+  const container = document.getElementById('gapmc-items');
+  gapmcData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'gapmc-item';
+    div.id = `gm-${i}`;
+    const opts = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="gapmc-sentence">${i + 1}. ${item.before} <span class="gap-blank">&nbsp;</span>${item.after}</div>
+      <div class="gapmc-options">
+        <button class="gapmc-opt" data-gm="${i}" data-correct="${opts[0].isCorrect}" onclick="selectGapMC(this)">${opts[0].text}</button>
+        <button class="gapmc-opt" data-gm="${i}" data-correct="${opts[1].isCorrect}" onclick="selectGapMC(this)">${opts[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectGapMC(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qIdx = btn.dataset.gm;
+  document.querySelectorAll(`.gapmc-opt[data-gm="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex2Selections[qIdx] = btn.dataset.correct === 'true';
+}
+
+function checkEx2() {
+  let score = 0;
+  gapmcData.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.gapmc-opt[data-gm="${i}"]`);
+    const wrapper = document.getElementById(`gm-${i}`);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (ex2Selections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+      mistakes.push(`Q${i + 1}: \u2192 ${item.correct}`);
+    }
+  });
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 10`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx2() {
+  ex2Selections = new Array(gapmcData.length).fill(null);
+  gapmcData.forEach((_, i) => {
+    const wrapper = document.getElementById(`gm-${i}`);
+    wrapper.classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.gapmc-opt[data-gm="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+  });
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 10';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(resultsBtn);
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/15`;
+  document.getElementById('r2').textContent = `${scores[1]}/10`;
+  const total = scores[0] + scores[1];
+  const max = 25;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      exercise: 'discussion-phrases',
+      scores: { categorisation: scores[0], inContext: scores[1] },
+      total: total, max: max, student: student,
+      mistakes: mistakes
+    })
+  }).catch(() => {});
+}
+
+function fullReset() {
+  resetEx1(); resetEx2();
+  mistakes = [];
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildEx1();
+buildEx2();
+</script>
+
+</body>
+</html>
