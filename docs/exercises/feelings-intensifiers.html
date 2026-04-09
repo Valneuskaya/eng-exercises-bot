@@ -893,14 +893,17 @@ function showResults() {
   const max = 31;
   document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
 
-  if (tg) {
-    tg.sendData(JSON.stringify({
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       exercise: 'feelings-intensifiers',
       scores: { match: scores[0], edIng: scores[1], intensifiers: scores[2], upgrade: scores[3] },
-      total: total,
-      max: max
-    }));
-  }
+      total: total, max: max, student: student
+    })
+  }).catch(() => {});
 }
 
 function resetAll() {
