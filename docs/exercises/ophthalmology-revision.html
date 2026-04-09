@@ -372,6 +372,7 @@ const exercises = ['ex1', 'ex2'];
 const navBtns = document.querySelectorAll('.nav-btn');
 let scores = [0, 0];
 let checked = [false, false];
+let mistakes = [];
 
 function showExercise(idx) {
   document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
@@ -428,6 +429,7 @@ function checkEx1() {
       buttons.forEach(btn => {
         if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
       });
+      mistakes.push(`${quiz1Data[i].stem} → ${quiz1Data[i].correct}`);
     }
   });
   scores[0] = score;
@@ -480,6 +482,7 @@ function checkEx2() {
       wrapper.classList.add('incorrect');
       input.classList.add('incorrect-input');
       document.getElementById(`answer-${i}`).classList.add('show');
+      mistakes.push(`${item.before}___${item.after} → ${item.answer}`);
     }
   });
   scores[1] = score;
@@ -543,7 +546,8 @@ function showResults() {
         body: JSON.stringify({
           exercise: 'ophthalmology-revision',
           scores: { collocations: scores[0], gapfill: scores[1] },
-          total: total, max: max, student: student
+          total: total, max: max, student: student,
+          mistakes: mistakes
         })
       }).catch(() => {});
 }

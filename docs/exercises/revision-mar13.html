@@ -522,6 +522,7 @@ const exercises = ['ex1', 'ex3', 'ex4', 'ex5'];
 const navBtns = document.querySelectorAll('.nav-btn');
 let scores = [0, 0, 0, 0];
 let checked = [false, false, false, false];
+let mistakes = [];
 
 function showExercise(idx) {
   document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
@@ -589,6 +590,7 @@ function checkEx1() {
       buttons.forEach(btn => {
         if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
       });
+      mistakes.push(`${quizData[i].def} → ${quizData[i].correct}`);
     }
   });
   scores[0] = score;
@@ -708,6 +710,7 @@ function checkEx3() {
       div.classList.add('correct-pair');
     } else {
       div.classList.add('incorrect-pair');
+      mistakes.push(`${matchData[p.verbIdx].verb} → ${matchData[p.verbIdx].meaning}`);
     }
   });
   // Disable further interaction
@@ -764,7 +767,7 @@ function checkEx4() {
     select.disabled = true;
     wrapper.classList.remove('correct', 'incorrect');
     if (val === correct) { score++; wrapper.classList.add('correct'); }
-    else { wrapper.classList.add('incorrect'); }
+    else { wrapper.classList.add('incorrect'); mistakes.push(`${item.prefix}-${item.word}`); }
   });
   scores[2] = score;
   checked[2] = true;
@@ -796,7 +799,7 @@ function checkEx5() {
     input.classList.remove('correct-gap', 'incorrect-gap');
     input.readOnly = true;
     if (val === answer || (alt && val === alt)) { score++; input.classList.add('correct-gap'); }
-    else { input.classList.add('incorrect-gap'); input.value = input.value ? `${input.value} \u2192 ${input.dataset.answer}` : input.dataset.answer; }
+    else { input.classList.add('incorrect-gap'); input.value = input.value ? `${input.value} \u2192 ${input.dataset.answer}` : input.dataset.answer; mistakes.push(input.dataset.answer); }
   });
   scores[3] = score;
   checked[3] = true;
@@ -856,7 +859,8 @@ function showResults() {
     body: JSON.stringify({
       exercise: 'revision-mar13',
       scores: { quiz: scores[0], phrasal: scores[1], prefixes: scores[2], gapfill: scores[3] },
-      total: total, max: max, student: student
+      total: total, max: max, student: student,
+      mistakes: mistakes
     })
   }).catch(() => {});
 }

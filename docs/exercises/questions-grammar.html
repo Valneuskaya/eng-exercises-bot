@@ -465,6 +465,7 @@ const exerciseIds = ['ex1', 'ex2', 'ex3'];
 const navBtns = document.querySelectorAll('.nav-btn');
 let scores = [0, 0, 0];
 let checked = [false, false, false];
+let mistakes = [];
 
 function showExercise(idx) {
   document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
@@ -557,6 +558,7 @@ function checkEx1() {
     } else {
       wrapper.classList.add('incorrect');
       document.getElementById(`builder-answer-${i}`).classList.add('show');
+      mistakes.push(`word order: ${item.answer}`);
     }
   });
   scores[0] = score;
@@ -610,6 +612,7 @@ function checkEx2() {
       wrapper.classList.add('incorrect');
       input.classList.add('incorrect-input');
       document.getElementById(`create-answer-${i}`).classList.add('show');
+      mistakes.push(`create: ${item.answer}`);
     }
   });
   scores[1] = score;
@@ -672,6 +675,7 @@ function checkEx3() {
       wrapper.classList.add('incorrect');
       input.classList.add('incorrect-input');
       document.getElementById(`indirect-answer-${i}`).classList.add('show');
+      mistakes.push(`indirect: ${item.opening} ${item.answers[0]}`);
     }
   });
   scores[2] = score;
@@ -734,7 +738,8 @@ function showResults() {
     body: JSON.stringify({
       exercise: 'questions-grammar',
       scores: { wordOrder: scores[0], create: scores[1], indirect: scores[2] },
-      total: total, max: max, student: student
+      total: total, max: max, student: student,
+      mistakes: mistakes
     })
   }).catch(() => {});
 }
