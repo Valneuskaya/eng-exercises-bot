@@ -18,282 +18,375 @@
     padding: 20px;
   }
 
-    .container { max-width: 800px; margin: 0 auto; }
+  .container { max-width: 800px; margin: 0 auto; }
 
-    h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
+  h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
 
-.subtitle {
+  .subtitle {
     text-align: center;
     color: var(--tg-theme-hint-color, #666);
     margin-bottom: 30px;
     font-size: 0.95rem;
   }
 
-  .section-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--tg-theme-text-color, #222);
-    margin: 24px 0 4px;
+  /* ── NAVIGATION ── */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
   }
 
-  .section-desc {
-    font-size: 0.8rem;
-    color: var(--tg-theme-hint-color, #888);
-    margin-bottom: 14px;
-  }
-
-  /* ── PROGRESS ── */
-  .progress-bar {
-    height: 5px;
-    background: var(--tg-theme-hint-color, #ccc);
-    border-radius: 3px;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--tg-theme-button-color, #5288c1);
-    border-radius: 3px;
-    transition: width 0.4s ease;
-    width: 0%;
-  }
-
-  /* ── TAP-TO-MATCH CARDS ── */
-  .match-card {
-    background: var(--tg-theme-secondary-bg-color, #fff);
-    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
     cursor: pointer;
-  }
-  .match-card .phrase {
+    font-family: inherit;
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--tg-theme-text-color, #222);
-    margin-bottom: 8px;
+    transition: all 0.2s;
   }
-  .match-card .cat-options {
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check { display: none; margin-left: 4px; }
+  .nav-btn.done .check { display: inline; }
+
+  /* ── EXERCISE PANELS ── */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* ── SCORE BAR ── */
+  .score-bar {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* ── TAP-TO-MATCH ── */
+  .match-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .match-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .match-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .match-phrase {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .match-options {
+    display: flex;
+    flex-direction: column;
     gap: 6px;
   }
-  .cat-btn {
-    font-size: 0.72rem;
-    padding: 5px 10px;
-    border-radius: 20px;
-    border: 1.5px solid var(--tg-theme-hint-color, #bbb);
-    background: transparent;
-    color: var(--tg-theme-text-color, #333);
+
+  @media (min-width: 480px) {
+    .match-options { flex-direction: row; flex-wrap: wrap; }
+  }
+
+  .match-option {
+    padding: 8px 12px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .match-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .match-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .match-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .match-option.disabled { pointer-events: none; }
+
+  .match-answer {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
+    margin-top: 6px;
     font-weight: 500;
   }
-  .cat-btn:hover { background: rgba(82,136,193,0.1); }
-  .cat-btn.selected-correct {
-    background: rgba(76,175,80,0.15);
-    border-color: #4caf50;
-    color: #4caf50;
-  }
-  .cat-btn.selected-wrong {
-    background: rgba(239,83,80,0.15);
-    border-color: #ef5350;
-    color: #ef5350;
-  }
-  .cat-btn.reveal-correct {
-    background: rgba(76,175,80,0.10);
-    border-color: #4caf50;
-    color: #4caf50;
-  }
-  .match-card.done { opacity: 0.75; pointer-events: none; }
+  .match-answer.show { display: block; }
 
   /* ── MULTIPLE CHOICE ── */
   .mc-item {
-    background: var(--tg-theme-secondary-bg-color, #fff);
-    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
     border-radius: 10px;
-    padding: 13px 14px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
-  .mc-item .situation {
-    font-size: 0.85rem;
+
+  .mc-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .mc-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .mc-situation {
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-style: italic;
     color: var(--tg-theme-hint-color, #666);
     margin-bottom: 10px;
-    font-style: italic;
-    font-weight: 500;
   }
-  .mc-options { display: flex; flex-direction: column; gap: 7px; }
-  .mc-btn {
-    text-align: left;
-    font-size: 0.88rem;
-    padding: 9px 12px;
-    border-radius: 8px;
-    border: 1.5px solid var(--tg-theme-hint-color, #ccc);
-    background: transparent;
-    color: var(--tg-theme-text-color, #222);
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.15s;
-  }
-  .mc-btn:hover { background: rgba(82,136,193,0.08); }
-  .mc-btn.correct {
-    background: rgba(76,175,80,0.15);
-    border-color: #4caf50;
-    color: #4caf50;
-  }
-  .mc-btn.wrong {
-    background: rgba(239,83,80,0.15);
-    border-color: #ef5350;
-    color: #ef5350;
-  }
-  .mc-btn.reveal {
-    background: rgba(76,175,80,0.10);
-    border-color: #4caf50;
-    color: #4caf50;
-  }
-  .mc-item.done { opacity: 0.75; pointer-events: none; }
 
-  /* ── GAP-FILL ── */
-  .gf-item {
-    background: var(--tg-theme-secondary-bg-color, #fff);
-    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
-    border-radius: 10px;
-    padding: 13px 14px;
-    margin-bottom: 12px;
-  }
-  .gf-sentence {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #222);
-    margin-bottom: 10px;
-    line-height: 1.5;
-  }
-  .gf-row { display: flex; gap: 8px; align-items: center; }
-  .gf-input {
-    flex: 1;
-    padding: 8px 11px;
+  .mc-options { display: flex; flex-direction: column; gap: 6px; }
+
+  .mc-option {
+    padding: 10px 14px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 8px;
-    border: 1.5px solid var(--tg-theme-hint-color, #ccc);
-    background: var(--tg-theme-bg-color, #f5f5f5);
-    color: var(--tg-theme-text-color, #222);
-    font-size: 0.9rem;
-    font-weight: 500;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .gf-input:focus { border-color: var(--tg-theme-button-color, #5288c1); }
-  .gf-input.correct {
-    background: rgba(76,175,80,0.15);
-    border-color: #4caf50;
-    color: #4caf50;
-  }
-  .gf-input.wrong {
-    background: rgba(239,83,80,0.15);
-    border-color: #ef5350;
-    color: #ef5350;
-  }
-  .gf-check-btn {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: none;
-    background: var(--tg-theme-button-color, #5288c1);
-    color: var(--tg-theme-button-text-color, #fff);
-    font-size: 0.85rem;
-    font-weight: 600;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
     cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.2s;
   }
-  .gf-feedback {
-    font-size: 0.8rem;
+
+  .mc-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .mc-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .mc-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .mc-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .mc-option.disabled { pointer-events: none; }
+
+  .mc-answer {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
     margin-top: 6px;
     font-weight: 500;
-    min-height: 18px;
   }
-  .gf-feedback.ok { color: #4caf50; }
-  .gf-feedback.err { color: #ef5350; }
-  .gf-item.done .gf-check-btn { display: none; }
+  .mc-answer.show { display: block; }
 
-  /* ── SCORE / SUBMIT ── */
-  .submit-btn {
-    display: block;
-    width: 100%;
-    margin: 28px 0 10px;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    background: var(--tg-theme-button-color, #5288c1);
-    color: var(--tg-theme-button-text-color, #fff);
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.02em;
+  /* ── GAP-FILL ── */
+  .gap-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 2.4;
+    color: var(--tg-theme-text-color, #1a1a2e);
+    margin-bottom: 16px;
   }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .score-box {
+  .gap-input {
+    width: 130px;
+    padding: 4px 8px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
+  }
+
+  .gap-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .correction {
     display: none;
-    background: var(--tg-theme-secondary-bg-color, #fff);
-    border-radius: 14px;
-    padding: 24px 20px;
-    text-align: center;
-    margin-top: 20px;
-  }
-  .score-box .big { font-size: 2.2rem; font-weight: 800; color: var(--tg-theme-button-color, #5288c1); }
-  .score-box .label { font-size: 0.9rem; color: var(--tg-theme-hint-color, #888); margin-top: 4px; font-weight: 500; }
-
-  .reset-btn {
-    margin-top: 16px;
-    padding: 10px 24px;
-    border-radius: 10px;
-    border: 1.5px solid var(--tg-theme-hint-color, #ccc);
-    background: var(--tg-theme-bg-color, #f5f5f5);
-    color: var(--tg-theme-text-color, #222);
-    font-size: 0.9rem;
+    font-size: 0.78rem;
+    color: #66bb6a;
     font-weight: 600;
-    cursor: pointer;
+  }
+  .correction.show { display: inline; }
+
+  /* ── FINAL RESULTS ── */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .result-grid {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .result-card {
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 12px;
+    padding: 16px 24px;
+    min-width: 110px;
+  }
+
+  .result-card .label {
+    font-size: 0.8rem;
+    color: var(--tg-theme-hint-color, #999);
+    margin-bottom: 4px;
+  }
+
+  .result-card .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .total-score {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: var(--tg-theme-text-color, #1a1a2e);
   }
 </style>
 </head>
 <body>
+<div class="container">
 
-<h1>Arranging a Meeting &amp; Encouraging Conversation</h1>
-<p class="subtitle">25 questions · 3 sections</p>
-<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <h1>Arranging a Meeting &amp; Encouraging Conversation</h1>
+  <p class="subtitle">27 questions · 3 sections</p>
 
-<!-- ══════════════════════════════════════
-     SECTION 1 — TAP-TO-MATCH
-════════════════════════════════════════ -->
-<div class="section-title">Section 1 — Tap to Match</div>
-<p class="section-desc">Tap the correct category for each phrase.</p>
-<div id="matchSection"></div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Match <span class="check">✓</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Multiple Choice <span class="check">✓</span></button>
+    <button class="nav-btn" onclick="showExercise(2)">3. Gap-fill <span class="check">✓</span></button>
+  </nav>
 
-<!-- ══════════════════════════════════════
-     SECTION 2 — MULTIPLE CHOICE
-════════════════════════════════════════ -->
-<div class="section-title">Section 2 — Multiple Choice</div>
-<p class="section-desc">Choose the most appropriate phrase for each situation.</p>
-<div id="mcSection"></div>
+  <!-- ══ SECTION 1 ══ -->
+  <div class="exercise active" id="ex1">
+    <h2>Section 1 — Tap to Match</h2>
+    <p class="instructions">Tap the correct category for each phrase.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score1">0 / 12</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+      </div>
+    </div>
+    <div id="match-items"></div>
+  </div>
 
-<!-- ══════════════════════════════════════
-     SECTION 3 — GAP-FILL
-════════════════════════════════════════ -->
-<div class="section-title">Section 3 — Gap-fill</div>
-<p class="section-desc">Type the missing word to complete each phrase.</p>
-<div id="gfSection"></div>
+  <!-- ══ SECTION 2 ══ -->
+  <div class="exercise" id="ex2">
+    <h2>Section 2 — Multiple Choice</h2>
+    <p class="instructions">Choose the most appropriate phrase for each situation.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score2">0 / 7</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+      </div>
+    </div>
+    <div id="mc-items"></div>
+  </div>
 
-<button class="submit-btn" id="submitBtn" onclick="submitAll()">Submit &amp; See Results</button>
+  <!-- ══ SECTION 3 ══ -->
+  <div class="exercise" id="ex3">
+    <h2>Section 3 — Gap-fill</h2>
+    <p class="instructions">Type the missing word to complete each phrase. The first letter is given as a hint.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score3">0 / 8</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx3()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx3()">Check</button>
+      </div>
+    </div>
+    <div class="gap-text" id="gap-text"></div>
+  </div>
 
-<div class="score-box" id="scoreBox">
-  <div class="big" id="scoreNum"></div>
-  <div class="label" id="scoreLabel"></div>
-  <br>
-  <button class="reset-btn" onclick="resetAll()">Try Again</button>
+  <!-- ══ RESULTS ══ -->
+  <div class="final-results" id="results">
+    <h2>🎉 Results</h2>
+    <div class="result-grid">
+      <div class="result-card"><div class="label">Match</div><div class="value" id="r1">—</div></div>
+      <div class="result-card"><div class="label">Multiple Choice</div><div class="value" id="r2">—</div></div>
+      <div class="result-card"><div class="label">Gap-fill</div><div class="value" id="r3">—</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <button class="btn btn-check" style="padding:12px 32px;font-size:1rem;" onclick="fullReset()">Try Again</button>
+  </div>
+
 </div>
-
 <script>
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
-
-// ── Back button
 if (tg?.BackButton) {
   tg.BackButton.show();
   tg.BackButton.onClick(() => { window.location.href = '../'; });
@@ -302,7 +395,6 @@ if (tg?.BackButton) {
 // ═══════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════
-
 const CATEGORIES = [
   'Introducing yourself (email)',
   'Making a follow-up call',
@@ -311,18 +403,18 @@ const CATEGORIES = [
 ];
 
 const matchData = [
+  { phrase: "I was given your details by ...", cat: 'Introducing yourself (email)' },
+  { phrase: "My name's... and I work for ...", cat: 'Introducing yourself (email)' },
   { phrase: "She recommended you to me as ...", cat: 'Introducing yourself (email)' },
   { phrase: "I'm calling about the email I sent you regarding ...", cat: 'Making a follow-up call' },
-  { phrase: "Let's say, provisionally, Tuesday the 13th at 11.00.", cat: 'Arranging to meet' },
-  { phrase: "Thanks. I wanted to speak to you about...", cat: 'Responding to a follow-up call' },
-  { phrase: "I was given your details by ...", cat: 'Introducing yourself (email)' },
   { phrase: "I wondered if you'd had time to...?", cat: 'Making a follow-up call' },
-  { phrase: "I suggest we meet to discuss things further.", cat: 'Arranging to meet' },
   { phrase: "I wanted to see if you are still interested in...", cat: 'Making a follow-up call' },
   { phrase: "Yes, I remember.", cat: 'Responding to a follow-up call' },
   { phrase: "Thanks for responding so quickly.", cat: 'Responding to a follow-up call' },
+  { phrase: "Thanks. I wanted to speak to you about...", cat: 'Responding to a follow-up call' },
+  { phrase: "I suggest we meet to discuss things further.", cat: 'Arranging to meet' },
+  { phrase: "Let's say, provisionally, Tuesday the 13th at 11.00.", cat: 'Arranging to meet' },
   { phrase: "Fine, whatever's best for you.", cat: 'Arranging to meet' },
-  { phrase: "My name's... and I work for ...", cat: 'Introducing yourself (email)' },
 ];
 
 const mcData = [
@@ -363,263 +455,363 @@ const mcData = [
   },
 ];
 
-const gfData = [
-  { before: "I'm calling about the email I sent you", hint: "r", answer: "regarding", after: "..." },
-  { before: "I", hint: "w", answer: "wondered", after: "if you'd had time to...?" },
-  { before: "Let's say,", hint: "p", answer: "provisionally", after: ", Tuesday the 13th at 11.00." },
-  { before: "I'll get my assistant to call you later today to", hint: "c", answer: "confirm", after: "." },
-  { before: "Let me know if you need a taxi and I'll", hint: "b", answer: "book", after: "one for you." },
-  { before: "Hi, I don't think we've", hint: "m", answer: "met", after: "." },
-  { before: "Is this your", hint: "f", answer: "first", after: "company event?" },
-  { before: "I've heard ... — is that", hint: "t", answer: "true", after: "?" },
+const gapSegments = [
+  { text: "1. I'm calling about the email I sent you ", gap: false },
+  { text: "", gap: true, id: 0, answer: "regarding", hint: "r" },
+  { text: " ...", gap: false },
+  { text: "\n\n2. I ", gap: false },
+  { text: "", gap: true, id: 1, answer: "wondered", hint: "w" },
+  { text: " if you'd had time to...?", gap: false },
+  { text: "\n\n3. Let's say, ", gap: false },
+  { text: "", gap: true, id: 2, answer: "provisionally", hint: "p" },
+  { text: ", Tuesday the 13th at 11.00.", gap: false },
+  { text: "\n\n4. I'll get my assistant to call you later today to ", gap: false },
+  { text: "", gap: true, id: 3, answer: "confirm", hint: "c" },
+  { text: ".", gap: false },
+  { text: "\n\n5. Let me know if you need a taxi and I'll ", gap: false },
+  { text: "", gap: true, id: 4, answer: "book", hint: "b" },
+  { text: " one for you.", gap: false },
+  { text: "\n\n6. Hi, I don't think we've ", gap: false },
+  { text: "", gap: true, id: 5, answer: "met", hint: "m" },
+  { text: ".", gap: false },
+  { text: "\n\n7. Is this your ", gap: false },
+  { text: "", gap: true, id: 6, answer: "first", hint: "f" },
+  { text: " company event?", gap: false },
+  { text: "\n\n8. I've heard ... — is that ", gap: false },
+  { text: "", gap: true, id: 7, answer: "true", hint: "t" },
+  { text: "?", gap: false },
 ];
 
 // ═══════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════
-let matchAnswers = new Array(matchData.length).fill(null); // null | true | false
-let mcAnswers    = new Array(mcData.length).fill(null);
-let gfAnswers    = new Array(gfData.length).fill(null);
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores  = [0, 0, 0];
+let checked = [false, false, false];
+let mistakes = [];
+let ex1Selections = new Array(matchData.length).fill(null);
+let ex2Selections = new Array(mcData.length).fill(null);
 
-const TOTAL = matchData.length + mcData.length + gfData.length; // 27 (12+7+8)
-
-function countAnswered() {
-  const m = matchAnswers.filter(x => x !== null).length;
-  const c = mcAnswers.filter(x => x !== null).length;
-  const g = gfAnswers.filter(x => x !== null).length;
-  return m + c + g;
-}
-
-function updateProgress() {
-  const pct = (countAnswered() / TOTAL) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(['ex1','ex2','ex3'][idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
 }
 
 // ═══════════════════════════════════════
-// SECTION 1 — TAP-TO-MATCH
+// SECTION 1: TAP-TO-MATCH
 // ═══════════════════════════════════════
-function buildMatch() {
-  const container = document.getElementById('matchSection');
-  matchData.forEach((item, idx) => {
-    const card = document.createElement('div');
-    card.className = 'match-card';
-    card.id = `match-card-${idx}`;
+function buildEx1() {
+  const container = document.getElementById('match-items');
+  container.innerHTML = '';
+  matchData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'match-item';
+    div.id = `m-${i}`;
 
     const phraseEl = document.createElement('div');
-    phraseEl.className = 'phrase';
-    phraseEl.textContent = item.phrase;
-    card.appendChild(phraseEl);
+    phraseEl.className = 'match-phrase';
+    phraseEl.textContent = `${i + 1}. ${item.phrase}`;
+    div.appendChild(phraseEl);
 
     const opts = document.createElement('div');
-    opts.className = 'cat-options';
-
+    opts.className = 'match-options';
     CATEGORIES.forEach(cat => {
       const btn = document.createElement('button');
-      btn.className = 'cat-btn';
+      btn.className = 'match-option';
       btn.textContent = cat;
-      btn.onclick = () => selectCat(idx, cat, btn, opts);
+      btn.dataset.mq = i;
+      btn.dataset.val = cat;
+      btn.onclick = () => selectMatch1(btn, i, cat);
       opts.appendChild(btn);
     });
+    div.appendChild(opts);
 
-    card.appendChild(opts);
-    container.appendChild(card);
+    const answer = document.createElement('div');
+    answer.className = 'match-answer';
+    answer.id = `ma-${i}`;
+    div.appendChild(answer);
+
+    container.appendChild(div);
   });
 }
 
-function selectCat(idx, chosen, btn, opts) {
-  const correct = matchData[idx].cat;
-  const isCorrect = chosen === correct;
-  matchAnswers[idx] = isCorrect;
+function selectMatch1(btn, i, val) {
+  if (btn.classList.contains('disabled')) return;
+  document.querySelectorAll(`.match-option[data-mq="${i}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex1Selections[i] = val;
+}
 
-  // Mark all buttons
-  opts.querySelectorAll('.cat-btn').forEach(b => {
-    if (b.textContent === correct) b.classList.add('reveal-correct');
+function checkEx1() {
+  let score = 0;
+  matchData.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.match-option[data-mq="${i}"]`);
+    const wrapper = document.getElementById(`m-${i}`);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.val === item.cat) btn.classList.add('correct-opt');
+    });
+    if (ex1Selections[i] === item.cat) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.val === ex1Selections[i] && ex1Selections[i] !== item.cat) btn.classList.add('incorrect-opt');
+      });
+      const label = document.getElementById(`ma-${i}`);
+      label.textContent = `Correct: ${item.cat}`;
+      label.classList.add('show');
+      mistakes.push(`"${item.phrase}" → ${item.cat}`);
+    }
   });
-  if (isCorrect) {
-    btn.classList.add('selected-correct');
-  } else {
-    btn.classList.add('selected-wrong');
-  }
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 12`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
 
-  document.getElementById(`match-card-${idx}`).classList.add('done');
-  updateProgress();
+function resetEx1() {
+  ex1Selections = new Array(matchData.length).fill(null);
+  matchData.forEach((_, i) => {
+    const wrapper = document.getElementById(`m-${i}`);
+    wrapper.classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.match-option[data-mq="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+    const label = document.getElementById(`ma-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 12';
+  navBtns[0].classList.remove('done');
 }
 
 // ═══════════════════════════════════════
-// SECTION 2 — MULTIPLE CHOICE
+// SECTION 2: MULTIPLE CHOICE
 // ═══════════════════════════════════════
-function buildMC() {
-  const container = document.getElementById('mcSection');
-  mcData.forEach((item, idx) => {
+function buildEx2() {
+  const container = document.getElementById('mc-items');
+  container.innerHTML = '';
+  mcData.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'mc-item';
-    div.id = `mc-item-${idx}`;
+    div.id = `mc-${i}`;
 
     const sit = document.createElement('div');
-    sit.className = 'situation';
-    sit.textContent = item.situation;
+    sit.className = 'mc-situation';
+    sit.textContent = `${i + 1}. ${item.situation}`;
     div.appendChild(sit);
 
     const opts = document.createElement('div');
     opts.className = 'mc-options';
-
     item.options.forEach((opt, oi) => {
       const btn = document.createElement('button');
-      btn.className = 'mc-btn';
+      btn.className = 'mc-option';
       btn.textContent = opt;
-      btn.onclick = () => selectMC(idx, oi, opts);
+      btn.dataset.mq = i;
+      btn.dataset.val = oi;
+      btn.onclick = () => selectMC(btn, i, oi);
       opts.appendChild(btn);
     });
-
     div.appendChild(opts);
-    container.appendChild(div);
-  });
-}
 
-function selectMC(idx, chosen, opts) {
-  const correct = mcData[idx].correct;
-  const isCorrect = chosen === correct;
-  mcAnswers[idx] = isCorrect;
-
-  opts.querySelectorAll('.mc-btn').forEach((btn, oi) => {
-    if (oi === correct) btn.classList.add('reveal');
-    if (oi === chosen && !isCorrect) btn.classList.add('wrong');
-    if (oi === chosen && isCorrect) { btn.classList.remove('reveal'); btn.classList.add('correct'); }
-  });
-
-  document.getElementById(`mc-item-${idx}`).classList.add('done');
-  updateProgress();
-}
-
-// ═══════════════════════════════════════
-// SECTION 3 — GAP-FILL
-// ═══════════════════════════════════════
-function buildGF() {
-  const container = document.getElementById('gfSection');
-  gfData.forEach((item, idx) => {
-    const div = document.createElement('div');
-    div.className = 'gf-item';
-    div.id = `gf-item-${idx}`;
-
-    const sentence = document.createElement('div');
-    sentence.className = 'gf-sentence';
-    sentence.textContent = `${item.before} ${item.hint}_______ ${item.after}`;
-    div.appendChild(sentence);
-
-    const row = document.createElement('div');
-    row.className = 'gf-row';
-
-    const input = document.createElement('input');
-    input.className = 'gf-input';
-    input.type = 'text';
-    input.placeholder = item.hint + '_______';
-    input.id = `gf-input-${idx}`;
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') checkGF(idx); });
-
-    const checkBtn = document.createElement('button');
-    checkBtn.className = 'gf-check-btn';
-    checkBtn.textContent = 'Check';
-    checkBtn.onclick = () => checkGF(idx);
-
-    row.appendChild(input);
-    row.appendChild(checkBtn);
-    div.appendChild(row);
-
-    const feedback = document.createElement('div');
-    feedback.className = 'gf-feedback';
-    feedback.id = `gf-fb-${idx}`;
-    div.appendChild(feedback);
+    const answer = document.createElement('div');
+    answer.className = 'mc-answer';
+    answer.id = `mca-${i}`;
+    div.appendChild(answer);
 
     container.appendChild(div);
   });
 }
 
-function checkGF(idx) {
-  const input = document.getElementById(`gf-input-${idx}`);
-  const fb = document.getElementById(`gf-fb-${idx}`);
-  const val = input.value.trim().toLowerCase();
-  const correct = gfData[idx].answer.toLowerCase();
-  const isCorrect = val === correct;
-  gfAnswers[idx] = isCorrect;
-
-  if (isCorrect) {
-    input.classList.add('correct');
-    fb.textContent = '✓ Correct!';
-    fb.className = 'gf-feedback ok';
-  } else {
-    input.classList.add('wrong');
-    fb.textContent = `✗ The answer is: ${gfData[idx].answer}`;
-    fb.className = 'gf-feedback err';
-  }
-
-  document.getElementById(`gf-item-${idx}`).classList.add('done');
-  input.disabled = true;
-  updateProgress();
+function selectMC(btn, i, val) {
+  if (btn.classList.contains('disabled')) return;
+  document.querySelectorAll(`.mc-option[data-mq="${i}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex2Selections[i] = val;
 }
 
-// ═══════════════════════════════════════
-// SUBMIT
-// ═══════════════════════════════════════
-function submitAll() {
-  // Auto-check any unanswered gap-fills
-  gfData.forEach((_, idx) => {
-    if (gfAnswers[idx] === null) checkGF(idx);
+function checkEx2() {
+  let score = 0;
+  mcData.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.mc-option[data-mq="${i}"]`);
+    const wrapper = document.getElementById(`mc-${i}`);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (parseInt(btn.dataset.val) === item.correct) btn.classList.add('correct-opt');
+    });
+    if (ex2Selections[i] === item.correct) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (parseInt(btn.dataset.val) === ex2Selections[i] && ex2Selections[i] !== item.correct) btn.classList.add('incorrect-opt');
+      });
+      const label = document.getElementById(`mca-${i}`);
+      label.textContent = `Correct: ${item.options[item.correct]}`;
+      label.classList.add('show');
+      mistakes.push(`MC Q${i + 1} → ${item.options[item.correct]}`);
+    }
   });
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 7`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
 
-  // Score
-  const score =
-    matchAnswers.filter(Boolean).length +
-    mcAnswers.filter(Boolean).length +
-    gfAnswers.filter(Boolean).length;
-
-  document.getElementById('scoreNum').textContent = `${score} / ${TOTAL}`;
-  const pct = Math.round((score / TOTAL) * 100);
-  let msg = pct === 100 ? '🎉 Perfect score!' : pct >= 80 ? '👏 Great job!' : pct >= 60 ? '👍 Good effort!' : '📚 Keep practising!';
-  document.getElementById('scoreLabel').textContent = `${pct}% — ${msg}`;
-
-  const scoreBox = document.getElementById('scoreBox');
-  scoreBox.style.display = 'block';
-  scoreBox.scrollIntoView({ behavior: 'smooth' });
-
-  document.getElementById('submitBtn').disabled = true;
-
-  if (tg?.sendData) {
-    tg.sendData(JSON.stringify({
-      exercise: 'meeting-conversation',
-      score,
-      total: TOTAL,
-      pct
-    }));
-  }
+function resetEx2() {
+  ex2Selections = new Array(mcData.length).fill(null);
+  mcData.forEach((_, i) => {
+    const wrapper = document.getElementById(`mc-${i}`);
+    wrapper.classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.mc-option[data-mq="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+    const label = document.getElementById(`mca-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 7';
+  navBtns[1].classList.remove('done');
 }
 
 // ═══════════════════════════════════════
-// RESET
+// SECTION 3: GAP-FILL
 // ═══════════════════════════════════════
-function resetAll() {
-  matchAnswers = new Array(matchData.length).fill(null);
-  mcAnswers    = new Array(mcData.length).fill(null);
-  gfAnswers    = new Array(gfData.length).fill(null);
+function buildEx3() {
+  const container = document.getElementById('gap-text');
+  let html = '';
+  gapSegments.forEach(seg => {
+    if (seg.gap) {
+      html += `<input type="text" class="gap-input" data-gid="${seg.id}" placeholder="${seg.hint}______" autocomplete="off" autocapitalize="off" spellcheck="false">`;
+      html += `<span class="correction" id="corr-${seg.id}"></span>`;
+    } else {
+      html += seg.text.replace(/\n/g, '<br>');
+    }
+  });
+  container.innerHTML = html;
+}
 
-  document.getElementById('matchSection').innerHTML = '';
-  document.getElementById('mcSection').innerHTML = '';
-  document.getElementById('gfSection').innerHTML = '';
-  document.getElementById('scoreBox').style.display = 'none';
-  document.getElementById('submitBtn').disabled = false;
-  document.getElementById('progressFill').style.width = '0%';
+function checkEx3() {
+  let score = 0;
+  gapSegments.filter(s => s.gap).forEach(seg => {
+    const input = document.querySelector(`.gap-input[data-gid="${seg.id}"]`);
+    const userVal = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+    if (userVal === seg.answer.toLowerCase()) {
+      score++;
+      input.classList.add('correct-input');
+    } else {
+      input.classList.add('incorrect-input');
+      const corr = document.getElementById(`corr-${seg.id}`);
+      corr.textContent = ` ${seg.answer}`;
+      corr.classList.add('show');
+      mistakes.push(`Gap ${seg.id + 1} → ${seg.answer}`);
+    }
+  });
+  scores[2] = score;
+  checked[2] = true;
+  document.getElementById('score3').textContent = `${score} / 8`;
+  navBtns[2].classList.add('done');
+  checkAllDone();
+}
 
-  buildMatch();
-  buildMC();
-  buildGF();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function resetEx3() {
+  gapSegments.filter(s => s.gap).forEach(seg => {
+    const input = document.querySelector(`.gap-input[data-gid="${seg.id}"]`);
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    const corr = document.getElementById(`corr-${seg.id}`);
+    corr.textContent = '';
+    corr.classList.remove('show');
+  });
+  scores[2] = 0; checked[2] = false;
+  document.getElementById('score3').textContent = '0 / 8';
+  navBtns[2].classList.remove('done');
+}
+
+// ═══════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let btn = document.getElementById('see-results-btn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'see-results-btn';
+      btn.className = 'btn btn-check';
+      btn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      btn.textContent = 'See Results';
+      btn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.appendChild(btn);
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+
+  document.getElementById('r1').textContent = `${scores[0]}/12`;
+  document.getElementById('r2').textContent = `${scores[1]}/7`;
+  document.getElementById('r3').textContent = `${scores[2]}/8`;
+
+  const total = scores[0] + scores[1] + scores[2];
+  const max = 27;
+  const pct = Math.round((total / max) * 100);
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${pct}%)`;
+
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      exercise: 'Arranging a Meeting & Encouraging Conversation',
+      scores: {
+        'Tap-to-Match': scores[0],
+        'Multiple Choice': scores[1],
+        'Gap-fill': scores[2]
+      },
+      total: total,
+      max: max,
+      student: student,
+      mistakes: mistakes
+    })
+  }).catch(() => {});
+}
+
+function fullReset() {
+  resetEx1(); resetEx2(); resetEx3();
+  mistakes = [];
+  const old = document.getElementById('see-results-btn');
+  if (old) old.remove();
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
 }
 
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-buildMatch();
-buildMC();
-buildGF();
+buildEx1();
+buildEx2();
+buildEx3();
 </script>
 </body>
 </html>
