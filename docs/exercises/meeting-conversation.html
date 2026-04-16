@@ -751,13 +751,14 @@ function checkAllDone() {
       btn = document.createElement('button');
       btn.id = 'see-results-btn';
       btn.className = 'btn btn-check';
-      btn.style.cssText = 'display:block;margin:20px auto 0;padding:12px 32px;font-size:1rem;';
+      btn.style.cssText = 'display:block;margin:20px auto;padding:12px 32px;font-size:1rem;';
       btn.textContent = 'See Results';
       btn.onclick = showResults;
     }
     const activeEx = document.querySelector('.exercise.active');
     if (activeEx && !activeEx.querySelector('#see-results-btn')) {
-      activeEx.appendChild(btn);
+      activeEx.prepend(btn);
+      btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 }
