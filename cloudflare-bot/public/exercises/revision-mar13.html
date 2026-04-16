@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revision Exercises - March 13</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check {
+    display: none;
+    margin-left: 4px;
+  }
+
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: #e8e6ff; color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* ===== EXERCISE 1: Multiple choice ===== */
+  .quiz-item {
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; }
+  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+
+  .quiz-definition {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .quiz-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .quiz-option {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid #e0dcff;
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .quiz-option.correct-opt { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .quiz-option.disabled { pointer-events: none; }
+
+  /* ===== EXERCISE 2: Tap to match ===== */
+  .match-section { margin-bottom: 16px; }
+
+  .match-section h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--tg-theme-hint-color, #999);
+    margin-bottom: 10px;
+  }
+
+  .match-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .match-chip {
+    padding: 10px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border: 2px solid #e0dcff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .match-chip:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-chip.selected-chip { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .match-chip.matched { opacity: 0.4; pointer-events: none; }
+  .match-chip.correct-chip { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; opacity: 1; }
+  .match-chip.incorrect-chip { border-color: #ef5350; background: #fce4ec; color: #c62828; opacity: 1; }
+
+  .pairs-list {
+    margin-top: 16px;
+  }
+
+  .pair-item {
+    padding: 10px 14px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+  }
+
+  .pair-item .pair-verb { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+  .pair-item .pair-arrow { color: var(--tg-theme-hint-color, #999); margin: 0 8px; }
+  .pair-item .pair-meaning { flex: 1; }
+  .pair-item .pair-remove { cursor: pointer; color: #ef5350; font-weight: 700; margin-left: 8px; }
+  .pair-item.correct-pair { border-color: #4caf50; background: #f1f8e9; }
+  .pair-item.incorrect-pair { border-color: #ef5350; background: #fce4ec; }
+
+  /* ===== EXERCISE 3: Prefix dropdowns ===== */
+  .prefix-item {
+    padding: 14px 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+  }
+
+  .prefix-item.correct { border-color: #4caf50; background: #f1f8e9; }
+  .prefix-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+
+  .prefix-select {
+    padding: 6px 10px;
+    border: 2px solid #e0dcff;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    cursor: pointer;
+    outline: none;
+    font-weight: 600;
+  }
+
+  .prefix-select:focus { border-color: var(--tg-theme-button-color, #6c63ff); }
+
+  .prefix-num {
+    font-weight: 700;
+    color: var(--tg-theme-button-color, #6c63ff);
+    min-width: 24px;
+  }
+
+  /* ===== EXERCISE 4: Gap fill ===== */
+  .gapfill-block {
+    padding: 20px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    line-height: 2;
+    font-size: 0.95rem;
+  }
+
+  .gap-input {
+    border: none;
+    border-bottom: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 2px 4px;
+    width: 140px;
+    outline: none;
+    color: var(--tg-theme-button-color, #6c63ff);
+    font-weight: 500;
+  }
+
+  .gap-input.correct-gap { border-bottom-color: #4caf50; color: #4caf50; }
+  .gap-input.incorrect-gap { border-bottom-color: #ef5350; color: #ef5350; }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .gap-input { width: 110px; }
+    .quiz-options { flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Revision Exercises</h1>
+  <p class="subtitle">Feb - Dec review</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Quick Quiz<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Phrasal Verbs<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(2)">3. Prefixes<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(3)">4. Pitch & Presentations<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Quick Quiz -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: How much do you remember?</h2>
+    <p class="instructions">Read the definition and choose the correct answer.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      </div>
+    </div>
+    <div id="quiz-items"></div>
+  </div>
+
+  <!-- EXERCISE 2: Phrasal Verb Matching (tap-to-match) -->
+  <div class="exercise" id="ex3">
+    <h2>Exercise 2: Phrasal Verb Matching</h2>
+    <p class="instructions">Tap a phrasal verb, then tap its meaning to make a pair.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score3">0 / 12</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx3()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx3()">Reset</button>
+      </div>
+    </div>
+    <div class="match-section">
+      <h3>Phrasal Verbs</h3>
+      <div class="match-grid" id="verb-chips"></div>
+    </div>
+    <div class="match-section">
+      <h3>Meanings</h3>
+      <div class="match-grid" id="meaning-chips"></div>
+    </div>
+    <div class="pairs-list" id="pairs-list"></div>
+  </div>
+
+  <!-- EXERCISE 3: Prefixes -->
+  <div class="exercise" id="ex4">
+    <h2>Exercise 3: Prefixes Challenge</h2>
+    <p class="instructions">Choose the correct prefix for each sentence.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score4">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx4()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx4()">Reset</button>
+      </div>
+    </div>
+    <div id="prefix-items"></div>
+  </div>
+
+  <!-- EXERCISE 4: Gap Fill -->
+  <div class="exercise" id="ex5">
+    <h2>Exercise 4: Pitch & Presentations</h2>
+    <p class="instructions">Complete the gaps with the missing words. Use the first letters as hints.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score5">0 / 12</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx5()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx5()">Reset</button>
+      </div>
+    </div>
+    <div class="gapfill-block">
+      <p>A good pitch should be <input class="gap-input" data-answer="compelling" placeholder="c___________">.
+      You need to <input class="gap-input" data-answer="draw" placeholder="d____"> people
+      <input class="gap-input" data-answer="in" placeholder="i_" style="width:40px"> and make them feel they'll
+      <input class="gap-input" data-answer="miss" placeholder="m____">
+      <input class="gap-input" data-answer="out" placeholder="o__" style="width:50px"> if they say no.
+      Don't just make a <input class="gap-input" data-answer="slick" placeholder="s_____">
+      <input class="gap-input" data-answer="deck" placeholder="d____" style="width:70px"> &mdash; tell a story.
+      If you want to get <input class="gap-input" data-answer="buy-in" placeholder="b__-i_" style="width:80px">,
+      you need to <input class="gap-input" data-answer="bring" placeholder="b_____"> people along with you.</p>
+    </div>
+    <div class="gapfill-block">
+      <p>When handling tough questions: take a breath,
+      <input class="gap-input" data-answer="reframe" data-alt="repeat" placeholder="r_______ "> the question,
+      and if you don't know the answer, say <em>"Can I get
+      <input class="gap-input" data-answer="back" placeholder="b____" style="width:70px"> to you on that?"</em>
+      Don't try to <input class="gap-input" data-answer="bluff" placeholder="b____" style="width:70px">.</p>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Quick Quiz</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">Phrasal Verbs</div><div class="value" id="r3">-</div></div>
+      <div class="result-card"><div class="label">Prefixes</div><div class="value" id="r4">-</div></div>
+      <div class="result-card"><div class="label">Pitch & Pres.</div><div class="value" id="r5">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="resetAll()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+
+const quizData = [
+  { def: "to summarize something briefly", correct: "to put it in a nutshell", wrong: "to keep it in the loop" },
+  { def: "to avoid saying things directly", correct: "to beat about the bush", wrong: "to get straight to the point" },
+  { def: "to keep someone informed", correct: "to keep someone in the loop", wrong: "to put someone in a nutshell" },
+  { def: "a warning sign that something is wrong", correct: "a red flag", wrong: "a red tape" },
+  { def: "a fake product that promises benefits but doesn't work", correct: "snake oil", wrong: "a slick deck" },
+  { def: "money (slang)", correct: "dough", wrong: "catch" },
+  { def: "approximately, more or less", correct: "give or take", wrong: "out of the blue" },
+  { def: "to feel attracted or interested in something", correct: "to be drawn to", wrong: "to be faced with" },
+  { def: "to tolerate something unpleasant", correct: "to put up with", wrong: "to put sth off" },
+  { def: "to suddenly forget everything or lose focus", correct: "to go blank", wrong: "to go over sb's head" }
+];
+
+const matchData = [
+  { verb: "get on (well) with sb", meaning: "have a friendly relationship" },
+  { verb: "build up", meaning: "make stronger" },
+  { verb: "turn sth round", meaning: "change into something successful" },
+  { verb: "put sth off", meaning: "postpone" },
+  { verb: "turn up", meaning: "arrive somewhere" },
+  { verb: "let sb down", meaning: "disappoint" },
+  { verb: "set up", meaning: "arrange" },
+  { verb: "carry on", meaning: "continue" },
+  { verb: "call sth off", meaning: "cancel" },
+  { verb: "go over sb's head", meaning: "bypass and talk to someone higher" },
+  { verb: "clinch a deal", meaning: "successfully close an agreement" },
+  { verb: "back out of", meaning: "withdraw from an agreement" }
+];
+
+const prefixData = [
+  { num: 1, before: "The product ", prefix: "under", word: "performed", after: " in the market \u2014 there was little profit.", wrong: ["over", "out"] },
+  { num: 2, before: "My ", prefix: "co", word: "worker", after: " helped me finish the report.", wrong: ["ex-", "re"] },
+  { num: 3, before: "We need to ", prefix: "re", word: "locate", after: " the office to a bigger building.", wrong: ["de", "mis"] },
+  { num: 4, before: "Don\u2019t ", prefix: "under", word: "estimate", after: " how long the project will take \u2014 it may take much longer.", wrong: ["over", "mis"] },
+  { num: 5, before: "She ", prefix: "mis", word: "judged", after: " his character at first.", wrong: ["out", "over"] },
+  { num: 6, before: "The company had to ", prefix: "de", word: "merge", after: " after the acquisition failed.", wrong: ["re", "co"] },
+  { num: 7, before: "He tends to ", prefix: "over", word: "spend", after: " on gadgets.", wrong: ["under", "out"] },
+  { num: 8, before: "We managed to ", prefix: "out", word: "bid", after: " all competitors.", wrong: ["over", "under"] },
+  { num: 9, before: "My ", prefix: "ex-", word: "boss", after: " still works in the same industry.", wrong: ["co", "de"] },
+  { num: 10, before: "The factory uses ", prefix: "ultra", word: "modern", after: " technology.", wrong: ["over", "re"] }
+];
+
+// ===================== NAVIGATION =====================
+
+const exercises = ['ex1', 'ex3', 'ex4', 'ex5'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0, 0, 0];
+let checked = [false, false, false, false];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exercises[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== UTILS =====================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== EXERCISE 1: Quick Quiz =====================
+
+let ex1Selections = new Array(quizData.length).fill(null);
+
+function buildEx1() {
+  const container = document.getElementById('quiz-items');
+  quizData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    const options = Math.random() > 0.5
+      ? [{ text: item.correct, isCorrect: true }, { text: item.wrong, isCorrect: false }]
+      : [{ text: item.wrong, isCorrect: false }, { text: item.correct, isCorrect: true }];
+    div.innerHTML = `
+      <div class="quiz-definition">${i + 1}. ${item.def}</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-q="${i}" data-correct="${options[0].isCorrect}" onclick="selectOption(this)">${options[0].text}</button>
+        <button class="quiz-option" data-q="${i}" data-correct="${options[1].isCorrect}" onclick="selectOption(this)">${options[1].text}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectOption(btn) {
+  if (btn.classList.contains('disabled')) return;
+  const qIdx = btn.dataset.q;
+  document.querySelectorAll(`.quiz-option[data-q="${qIdx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  ex1Selections[qIdx] = btn.dataset.correct === 'true';
+}
+
+function checkEx1() {
+  let score = 0;
+  quizData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="${i}"]`);
+    const wrapper = buttons[0].closest('.quiz-item');
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.correct === 'true') btn.classList.add('correct-opt');
+    });
+    if (ex1Selections[i] === true) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
+      });
+    }
+  });
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 10`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx1() {
+  ex1Selections = new Array(quizData.length).fill(null);
+  quizData.forEach((_, i) => {
+    const buttons = document.querySelectorAll(`.quiz-option[data-q="${i}"]`);
+    buttons[0].closest('.quiz-item').classList.remove('correct', 'incorrect');
+    buttons.forEach(btn => btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled'));
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 10';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: Tap-to-Match =====================
+
+let selectedVerb = null;
+let selectedMeaning = null;
+let pairs = []; // [{verbIdx, meaningIdx}]
+
+function buildEx3() {
+  const verbContainer = document.getElementById('verb-chips');
+  const meaningContainer = document.getElementById('meaning-chips');
+
+  const shuffledVerbs = shuffle(matchData.map((d, i) => ({ ...d, idx: i })));
+  const shuffledMeanings = shuffle(matchData.map((d, i) => ({ ...d, idx: i })));
+
+  shuffledVerbs.forEach(item => {
+    const chip = document.createElement('span');
+    chip.className = 'match-chip';
+    chip.textContent = item.verb;
+    chip.dataset.idx = item.idx;
+    chip.dataset.type = 'verb';
+    chip.onclick = () => tapChip(chip, 'verb');
+    verbContainer.appendChild(chip);
+  });
+
+  shuffledMeanings.forEach(item => {
+    const chip = document.createElement('span');
+    chip.className = 'match-chip';
+    chip.textContent = item.meaning;
+    chip.dataset.idx = item.idx;
+    chip.dataset.type = 'meaning';
+    chip.onclick = () => tapChip(chip, 'meaning');
+    meaningContainer.appendChild(chip);
+  });
+}
+
+function tapChip(chip, type) {
+  if (chip.classList.contains('matched')) return;
+
+  if (type === 'verb') {
+    document.querySelectorAll('#verb-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
+    chip.classList.add('selected-chip');
+    selectedVerb = chip;
+  } else {
+    document.querySelectorAll('#meaning-chips .match-chip').forEach(c => c.classList.remove('selected-chip'));
+    chip.classList.add('selected-chip');
+    selectedMeaning = chip;
+  }
+
+  if (selectedVerb && selectedMeaning) {
+    // Create pair
+    const verbIdx = parseInt(selectedVerb.dataset.idx);
+    const meaningIdx = parseInt(selectedMeaning.dataset.idx);
+    pairs.push({ verbIdx, meaningIdx });
+    selectedVerb.classList.remove('selected-chip');
+    selectedVerb.classList.add('matched');
+    selectedMeaning.classList.remove('selected-chip');
+    selectedMeaning.classList.add('matched');
+    selectedVerb = null;
+    selectedMeaning = null;
+    renderPairs();
+  }
+}
+
+function renderPairs() {
+  const list = document.getElementById('pairs-list');
+  list.innerHTML = '';
+  pairs.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'pair-item';
+    div.innerHTML = `
+      <span class="pair-verb">${matchData[p.verbIdx].verb}</span>
+      <span class="pair-arrow">&rarr;</span>
+      <span class="pair-meaning">${matchData[p.meaningIdx].meaning}</span>
+      <span class="pair-remove" onclick="removePair(${i})">&times;</span>
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById('score3').textContent = `${pairs.length} / 12 paired`;
+}
+
+function removePair(idx) {
+  const p = pairs[idx];
+  // Un-match chips
+  document.querySelectorAll(`#verb-chips .match-chip[data-idx="${p.verbIdx}"]`).forEach(c => c.classList.remove('matched'));
+  document.querySelectorAll(`#meaning-chips .match-chip[data-idx="${p.meaningIdx}"]`).forEach(c => c.classList.remove('matched'));
+  pairs.splice(idx, 1);
+  renderPairs();
+}
+
+function checkEx3() {
+  let score = 0;
+  const pairItems = document.querySelectorAll('#pairs-list .pair-item');
+  pairs.forEach((p, i) => {
+    const div = pairItems[i];
+    if (p.verbIdx === p.meaningIdx) {
+      score++;
+      div.classList.add('correct-pair');
+    } else {
+      div.classList.add('incorrect-pair');
+    }
+  });
+  // Disable further interaction
+  document.querySelectorAll('.match-chip').forEach(c => c.style.pointerEvents = 'none');
+  document.querySelectorAll('.pair-remove').forEach(r => r.style.display = 'none');
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score3').textContent = `${score} / 12`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx3() {
+  pairs = [];
+  selectedVerb = null;
+  selectedMeaning = null;
+  document.querySelectorAll('.match-chip').forEach(c => {
+    c.classList.remove('matched', 'selected-chip', 'correct-chip', 'incorrect-chip');
+    c.style.pointerEvents = '';
+  });
+  document.getElementById('pairs-list').innerHTML = '';
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score3').textContent = '0 / 12';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== EXERCISE 3: Prefixes =====================
+
+function buildEx4() {
+  const container = document.getElementById('prefix-items');
+  prefixData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'prefix-item';
+    div.id = `pf_${i}`;
+    const options = shuffle([item.prefix, ...item.wrong]);
+    let selectHTML = `<select class="prefix-select" id="ps_${i}"><option value="">???</option>`;
+    options.forEach(p => {
+      const display = p.endsWith('-') ? p : p + '-';
+      selectHTML += `<option value="${p}">${display}</option>`;
+    });
+    selectHTML += `</select>`;
+    div.innerHTML = `<span class="prefix-num">${item.num}.</span> ${item.before}${selectHTML}<strong>${item.word}</strong>${item.after}`;
+    container.appendChild(div);
+  });
+}
+
+function checkEx4() {
+  let score = 0;
+  prefixData.forEach((item, i) => {
+    const select = document.getElementById(`ps_${i}`);
+    const wrapper = document.getElementById(`pf_${i}`);
+    const val = select.value.replace(/-/g, '').trim();
+    const correct = item.prefix.replace(/-/g, '').trim();
+    select.disabled = true;
+    wrapper.classList.remove('correct', 'incorrect');
+    if (val === correct) { score++; wrapper.classList.add('correct'); }
+    else { wrapper.classList.add('incorrect'); }
+  });
+  scores[2] = score;
+  checked[2] = true;
+  document.getElementById('score4').textContent = `${score} / 10`;
+  navBtns[2].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx4() {
+  prefixData.forEach((_, i) => {
+    document.getElementById(`ps_${i}`).value = '';
+    document.getElementById(`ps_${i}`).disabled = false;
+    document.getElementById(`pf_${i}`).classList.remove('correct', 'incorrect');
+  });
+  scores[2] = 0; checked[2] = false;
+  document.getElementById('score4').textContent = '0 / 10';
+  navBtns[2].classList.remove('done');
+}
+
+// ===================== EXERCISE 4: Gap Fill =====================
+
+function checkEx5() {
+  let score = 0;
+  const inputs = document.querySelectorAll('.gap-input');
+  inputs.forEach(input => {
+    const answer = input.dataset.answer.toLowerCase();
+    const alt = input.dataset.alt ? input.dataset.alt.toLowerCase() : null;
+    const val = input.value.trim().toLowerCase();
+    input.classList.remove('correct-gap', 'incorrect-gap');
+    input.readOnly = true;
+    if (val === answer || (alt && val === alt)) { score++; input.classList.add('correct-gap'); }
+    else { input.classList.add('incorrect-gap'); input.value = input.value ? `${input.value} \u2192 ${input.dataset.answer}` : input.dataset.answer; }
+  });
+  scores[3] = score;
+  checked[3] = true;
+  const total = inputs.length;
+  document.getElementById('score5').textContent = `${score} / ${total}`;
+  navBtns[3].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx5() {
+  document.querySelectorAll('.gap-input').forEach(input => {
+    input.value = ''; input.readOnly = false;
+    input.classList.remove('correct-gap', 'incorrect-gap');
+  });
+  scores[3] = 0; checked[3] = false;
+  document.getElementById('score5').textContent = '0 / 12';
+  navBtns[3].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.prepend(resultsBtn);
+      resultsBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/10`;
+  document.getElementById('r3').textContent = `${scores[1]}/12`;
+  document.getElementById('r4').textContent = `${scores[2]}/10`;
+  document.getElementById('r5').textContent = `${scores[3]}/12`;
+  const total = scores.reduce((a, b) => a + b, 0);
+  const max = 44;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  if (tg) {
+    tg.sendData(JSON.stringify({
+      exercise: 'revision-mar13',
+      scores: { quiz: scores[0], phrasal: scores[1], prefixes: scores[2], gapfill: scores[3] },
+      total: total,
+      max: max
+    }));
+  }
+}
+
+function resetAll() {
+  resetEx1(); resetEx3(); resetEx4(); resetEx5();
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildEx1();
+buildEx3();
+buildEx4();
+</script>
+
+</body>
+</html>
