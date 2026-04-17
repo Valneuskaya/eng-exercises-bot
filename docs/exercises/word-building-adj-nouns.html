@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Building: Adjectives & Nouns</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .nav-btn.active {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .nav-btn .check {
+    display: none;
+    margin-left: 4px;
+  }
+
+  .nav-btn.done .check { display: inline; }
+
+  /* Exercise sections */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .exercise .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-check {
+    background: var(--tg-theme-button-color, #6c63ff);
+    color: var(--tg-theme-button-text-color, white);
+  }
+
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* Gap fill items */
+  .gap-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .gap-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+
+  .gap-sentence {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    line-height: 1.7;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .gap-input {
+    width: 160px;
+    padding: 6px 10px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
+  }
+
+  .gap-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .gap-answer {
+    display: none;
+    font-size: 0.85rem;
+    color: #66bb6a;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .gap-answer.show { display: block; }
+
+  .given-word {
+    font-weight: 600;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  /* Results */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .final-results.active { display: block; }
+
+  .final-results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+
+  .result-card {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .total-score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .exercise { padding: 20px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .gap-input { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Word Building</h1>
+  <p class="subtitle">Adjectives & Nouns</p>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Form<span class="check"> &#10003;</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. In context<span class="check"> &#10003;</span></button>
+  </div>
+
+  <!-- EXERCISE 1: Type the other form -->
+  <div class="exercise active" id="ex1">
+    <h2>Exercise 1: Type the other form</h2>
+    <p class="instructions">You are given an adjective or a noun. Type the other form.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score1">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      </div>
+    </div>
+    <div id="ex1-items"></div>
+  </div>
+
+  <!-- EXERCISE 2: Use the correct form in a sentence -->
+  <div class="exercise" id="ex2">
+    <h2>Exercise 2: Use the correct form</h2>
+    <p class="instructions">Read the sentence and type the correct form (adjective or noun). The word in brackets is your hint.</p>
+    <div class="score-bar">
+      <span class="score-text" id="score2">0 / 10</span>
+      <div class="btn-group">
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+      </div>
+    </div>
+    <div id="ex2-items"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="final-results" id="results">
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card"><div class="label">Form</div><div class="value" id="r1">-</div></div>
+      <div class="result-card"><div class="label">In context</div><div class="value" id="r2">-</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <br>
+    <button class="btn btn-reset" onclick="resetAll()">Start over</button>
+  </div>
+</div>
+
+<script>
+// ===================== TELEGRAM =====================
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ===================== DATA =====================
+
+// Part 1: given word → type the other form
+// direction: "noun" means "type the noun", "adj" means "type the adjective"
+const ex1Data = [
+  { given: "frustrated", direction: "noun", answers: ["frustration"] },
+  { given: "embarrassment", direction: "adj", answers: ["embarrassed"] },
+  { given: "creative", direction: "noun", answers: ["creativity", "creativeness"] },
+  { given: "anxious", direction: "noun", answers: ["anxiety"] },
+  { given: "thrill", direction: "adj", answers: ["thrilled"] },
+  { given: "awkward", direction: "noun", answers: ["awkwardness"] },
+  { given: "amusement", direction: "adj", answers: ["amused"] },
+  { given: "angry", direction: "noun", answers: ["anger"] },
+  { given: "nervous", direction: "noun", answers: ["nervousness"] },
+  { given: "fascinated", direction: "noun", answers: ["fascination"] }
+];
+
+// Part 2: sentence gap-fill with hint word in brackets
+const ex2Data = [
+  { sentence: "Her {gap} with marine biology led her to become a scientist.", hint: "fascinated", firstLetter: "f", answers: ["fascination"] },
+  { sentence: "I could see the {gap} on his face when the computer crashed again.", hint: "frustrated", firstLetter: "f", answers: ["frustration"] },
+  { sentence: "The children were {gap} by the magic show.", hint: "amusement", firstLetter: "a", answers: ["amused"] },
+  { sentence: "She tried to hide her {gap} before the job interview.", hint: "nervous", firstLetter: "n", answers: ["nervousness"] },
+  { sentence: "He felt {gap} with the exam results.", hint: "disappointment", firstLetter: "d", answers: ["disappointed"] },
+  { sentence: "There was a moment of {gap} when nobody knew what to say.", hint: "awkward", firstLetter: "a", answers: ["awkwardness"] },
+  { sentence: "The team showed great {gap} in solving the problem.", hint: "creative", firstLetter: "c", answers: ["creativity", "creativeness"] },
+  { sentence: "His constant {gap} about money was affecting his sleep.", hint: "worried", firstLetter: "w", answers: ["worry"] },
+  { sentence: "The {gap} of the trip made it even more exciting.", hint: "spontaneous", firstLetter: "s", answers: ["spontaneity"] },
+  { sentence: "I didn\u2019t mean to cause any {gap}.", hint: "embarrassed", firstLetter: "e", answers: ["embarrassment"] }
+];
+
+// ===================== NAVIGATION =====================
+
+const exerciseIds = ['ex1', 'ex2'];
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores = [0, 0];
+let checked = [false, false];
+let mistakes = [];
+
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(exerciseIds[idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+}
+
+// ===================== EXERCISE 1: Type the other form =====================
+
+function buildEx1() {
+  const container = document.getElementById('ex1-items');
+  ex1Data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'gap-item';
+    const label = item.direction === 'noun' ? 'noun' : 'adjective';
+    const firstLetter = item.answers[0][0];
+    const underscores = '_'.repeat(item.answers[0].length - 1);
+    div.innerHTML = `
+      <div class="gap-sentence">${i + 1}. <span class="given-word">${item.given}</span> &rarr; <input type="text" class="gap-input" data-ex="1" data-idx="${i}" placeholder="${firstLetter}${underscores}" autocomplete="off" autocapitalize="off" spellcheck="false"> <span style="color:var(--tg-theme-hint-color,#999);font-size:0.85rem">(${label})</span></div>
+      <div class="gap-answer" id="ans1-${i}">Correct answer: ${item.answers.join(' / ')}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkEx1() {
+  let score = 0;
+  ex1Data.forEach((item, i) => {
+    const input = document.querySelector(`.gap-input[data-ex="1"][data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    const userAnswer = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+
+    if (item.answers.some(a => a.toLowerCase() === userAnswer)) {
+      score++;
+      wrapper.classList.add('correct');
+      input.classList.add('correct-input');
+    } else {
+      wrapper.classList.add('incorrect');
+      input.classList.add('incorrect-input');
+      document.getElementById(`ans1-${i}`).classList.add('show');
+      mistakes.push(`${item.given} → ${item.answers.join(' / ')}`);
+    }
+  });
+  scores[0] = score;
+  checked[0] = true;
+  document.getElementById('score1').textContent = `${score} / 10`;
+  navBtns[0].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx1() {
+  ex1Data.forEach((_, i) => {
+    const input = document.querySelector(`.gap-input[data-ex="1"][data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    wrapper.classList.remove('correct', 'incorrect');
+    document.getElementById(`ans1-${i}`).classList.remove('show');
+  });
+  scores[0] = 0; checked[0] = false;
+  document.getElementById('score1').textContent = '0 / 10';
+  navBtns[0].classList.remove('done');
+}
+
+// ===================== EXERCISE 2: Correct form in context =====================
+
+function buildEx2() {
+  const container = document.getElementById('ex2-items');
+  ex2Data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'gap-item';
+    const underscores = '_'.repeat(item.answers[0].length - 1);
+    const parts = item.sentence.split('{gap}');
+    div.innerHTML = `
+      <div class="gap-sentence">${i + 1}. ${parts[0]}<input type="text" class="gap-input" data-ex="2" data-idx="${i}" placeholder="${item.firstLetter}${underscores}" autocomplete="off" autocapitalize="off" spellcheck="false">${parts[1]}</div>
+      <div class="gap-answer" id="ans2-${i}">Correct answer: ${item.answers.join(' / ')}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkEx2() {
+  let score = 0;
+  ex2Data.forEach((item, i) => {
+    const input = document.querySelector(`.gap-input[data-ex="2"][data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    const userAnswer = input.value.trim().toLowerCase();
+    input.classList.add('disabled');
+
+    if (item.answers.some(a => a.toLowerCase() === userAnswer)) {
+      score++;
+      wrapper.classList.add('correct');
+      input.classList.add('correct-input');
+    } else {
+      wrapper.classList.add('incorrect');
+      input.classList.add('incorrect-input');
+      document.getElementById(`ans2-${i}`).classList.add('show');
+      mistakes.push(`(${item.hint}) → ${item.answers.join(' / ')}`);
+    }
+  });
+  scores[1] = score;
+  checked[1] = true;
+  document.getElementById('score2').textContent = `${score} / 10`;
+  navBtns[1].classList.add('done');
+  checkAllDone();
+}
+
+function resetEx2() {
+  ex2Data.forEach((_, i) => {
+    const input = document.querySelector(`.gap-input[data-ex="2"][data-idx="${i}"]`);
+    const wrapper = input.closest('.gap-item');
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+    wrapper.classList.remove('correct', 'incorrect');
+    document.getElementById(`ans2-${i}`).classList.remove('show');
+  });
+  scores[1] = 0; checked[1] = false;
+  document.getElementById('score2').textContent = '0 / 10';
+  navBtns[1].classList.remove('done');
+}
+
+// ===================== RESULTS =====================
+
+function checkAllDone() {
+  if (checked.every(c => c)) {
+    let resultsBtn = document.getElementById('see-results-btn');
+    if (!resultsBtn) {
+      resultsBtn = document.createElement('button');
+      resultsBtn.id = 'see-results-btn';
+      resultsBtn.className = 'btn btn-check';
+      resultsBtn.style.cssText = 'display:block;margin:20px auto;padding:12px 32px;font-size:1rem;';
+      resultsBtn.textContent = 'See Results';
+      resultsBtn.onclick = showResults;
+    }
+    const activeEx = document.querySelector('.exercise.active');
+    if (activeEx && !activeEx.querySelector('#see-results-btn')) {
+      activeEx.prepend(resultsBtn);
+      resultsBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  document.getElementById('r1').textContent = `${scores[0]}/10`;
+  document.getElementById('r2').textContent = `${scores[1]}/10`;
+  const total = scores.reduce((a, b) => a + b, 0);
+  const max = 20;
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
+
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      exercise: 'word-building-adj-nouns',
+      scores: { form: scores[0], context: scores[1] },
+      total: total, max: max, student: student,
+      mistakes: mistakes
+    })
+  }).catch(() => {});
+}
+
+function resetAll() {
+  resetEx1(); resetEx2();
+  mistakes = [];
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ===================== INIT =====================
+buildEx1();
+buildEx2();
+</script>
+
+</body>
+</html>
