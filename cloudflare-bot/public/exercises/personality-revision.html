@@ -125,25 +125,27 @@
   }
 
   .btn-check:hover { opacity: 0.85; }
-  .btn-reset { background: #e8e6ff; color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
   .btn-reset:hover { opacity: 0.85; }
   .btn-group { display: flex; gap: 8px; }
 
   /* ===== Multiple choice ===== */
   .quiz-item {
     padding: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
     border-radius: 10px;
     margin-bottom: 10px;
     transition: border-color 0.3s;
   }
 
-  .quiz-item.correct { border-color: #4caf50; background: #f1f8e9; }
-  .quiz-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+  .quiz-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
 
   .quiz-definition {
     font-size: 0.95rem;
+    font-weight: 500;
     margin-bottom: 8px;
+    color: var(--tg-theme-text-color, #1a1a2e);
   }
 
   .quiz-options {
@@ -155,44 +157,48 @@
   .quiz-option {
     flex: 1;
     padding: 10px 16px;
-    border: 2px solid #e0dcff;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 8px;
     background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
     cursor: pointer;
     font-family: inherit;
     font-size: 0.9rem;
+    font-weight: 500;
     text-align: center;
     transition: all 0.2s;
   }
 
   .quiz-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
   .quiz-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
-  .quiz-option.correct-opt { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
-  .quiz-option.incorrect-opt { border-color: #ef5350; background: #fce4ec; color: #c62828; }
+  .quiz-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .quiz-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
   .quiz-option.disabled { pointer-events: none; }
 
   /* ===== Gap fill ===== */
   .gap-item {
     padding: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
     border-radius: 10px;
     margin-bottom: 10px;
     transition: border-color 0.3s;
   }
 
-  .gap-item.correct { border-color: #4caf50; background: #f1f8e9; }
-  .gap-item.incorrect { border-color: #ef5350; background: #fce4ec; }
+  .gap-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
 
   .gap-sentence {
     font-size: 0.95rem;
+    font-weight: 500;
     margin-bottom: 8px;
     line-height: 1.7;
+    color: var(--tg-theme-text-color, #1a1a2e);
   }
 
   .gap-input {
     width: 160px;
     padding: 6px 10px;
-    border: 2px solid #e0dcff;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
     border-radius: 8px;
     font-family: inherit;
     font-size: 0.9rem;
@@ -206,14 +212,14 @@
     border-color: var(--tg-theme-button-color, #6c63ff);
   }
 
-  .gap-input.correct-input { border-color: #4caf50; background: #e8f5e9; }
-  .gap-input.incorrect-input { border-color: #ef5350; background: #fce4ec; }
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
   .gap-input.disabled { pointer-events: none; }
 
   .gap-answer {
     display: none;
     font-size: 0.85rem;
-    color: #4caf50;
+    color: #66bb6a;
     margin-top: 4px;
     font-weight: 500;
   }
@@ -364,6 +370,7 @@ const exercises = ['ex1', 'ex2'];
 const navBtns = document.querySelectorAll('.nav-btn');
 let scores = [0, 0];
 let checked = [false, false];
+let mistakes = [];
 
 function showExercise(idx) {
   document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
@@ -431,6 +438,7 @@ function checkEx1() {
       buttons.forEach(btn => {
         if (btn.dataset.correct === 'false' && btn.classList.contains('selected')) btn.classList.add('incorrect-opt');
       });
+      mistakes.push(`${quiz1Data[i].def} → ${quiz1Data[i].correct}`);
     }
   });
   scores[0] = score;
@@ -484,6 +492,7 @@ function checkEx2() {
       wrapper.classList.add('incorrect');
       input.classList.add('incorrect-input');
       document.getElementById(`answer-${i}`).classList.add('show');
+      mistakes.push(`${item.sentence} → ${item.answer}`);
     }
   });
   scores[1] = score;
@@ -538,14 +547,18 @@ function showResults() {
   const max = 18;
   document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${Math.round((total / max) * 100)}%)`;
 
-  if (tg) {
-    tg.sendData(JSON.stringify({
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       exercise: 'personality-revision',
       scores: { phrases: scores[0], adjectives: scores[1] },
-      total: total,
-      max: max
-    }));
-  }
+      total: total, max: max, student: student,
+      mistakes: mistakes
+    })
+  }).catch(() => {});
 }
 
 function resetAll() {
