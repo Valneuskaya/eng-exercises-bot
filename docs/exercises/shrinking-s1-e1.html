@@ -271,6 +271,30 @@
   .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); margin-bottom: 4px; }
   .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
   .total-score { font-size: 1.1rem; font-weight: 600; margin-bottom: 24px; color: var(--tg-theme-text-color, #1a1a2e); }
+
+  /* ── STICKY "SEE RESULTS" BAR ──
+     Fixed to the viewport so it can't be scrolled past on a phone. */
+  .results-bar {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 100;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--tg-theme-secondary-bg-color, white);
+    box-shadow: 0 -2px 14px rgba(0,0,0,0.18);
+  }
+  .results-bar.show { display: block; }
+  .results-bar button {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 14px 32px;
+    font-size: 1rem;
+  }
+  /* leave room so the bar never covers the last question */
+  body.has-results-bar { padding-bottom: 96px; }
 </style>
 </head>
 <body>
@@ -290,8 +314,11 @@
     <h2>Section 1 — Pair Up</h2>
     <p class="instructions">Tap a phrase on the left, then tap its definition on the right.</p>
     <div class="score-bar">
-      <span class="score-text">Matched: <span id="score1">0 / 8</span></span>
-      <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+      <span class="score-text">Matched: <span id="score1">0 / 8</span> · Mistakes: <span id="wrong1">0</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+        <button class="btn btn-check" id="reveal1" onclick="revealEx1()">Show answers</button>
+      </div>
     </div>
     <div class="pair-progress" id="pair-progress">Tap a phrase to start</div>
     <div class="pair-arena">
@@ -340,6 +367,10 @@
     <button class="btn btn-check" style="padding:12px 32px;font-size:1rem;" onclick="fullReset()">Try Again</button>
   </div>
 
+</div>
+
+<div class="results-bar" id="results-bar">
+  <button class="btn btn-check" onclick="showResults()">🏁 See Results</button>
 </div>
 <script>
 const tg = window.Telegram?.WebApp;
@@ -503,7 +534,8 @@ let mistakes = [];
 
 let selectedWord = null;
 let selectedDef  = null;
-let s1Score = 0;
+let s1Score  = 0;   // pairs matched
+let s1Wrong  = 0;   // wrong attempts + revealed pairs — each costs a point
 let s1WordOrder = [];
 let s1DefOrder  = [];
 
@@ -517,6 +549,8 @@ function showExercise(idx) {
   navBtns.forEach(b => b.classList.remove('active'));
   document.getElementById(['ex1','ex2','ex3'][idx]).classList.add('active');
   navBtns[idx].classList.add('active');
+  window.scrollTo(0, 0);
+  checkAllDone(); // bring the bar back if they return from the results screen
 }
 
 // ═══════════════════════════════════════
@@ -537,6 +571,7 @@ function buildEx1() {
   selectedWord = null;
   selectedDef  = null;
   s1Score = 0;
+  s1Wrong = 0;
 
   const wordCol = document.getElementById('pair-words');
   const defCol  = document.getElementById('pair-defs');
@@ -564,7 +599,49 @@ function buildEx1() {
   });
 
   document.getElementById('score1').textContent = '0 / 8';
+  document.getElementById('wrong1').textContent = '0';
+  document.getElementById('reveal1').style.display = '';
   document.getElementById('pair-progress').textContent = 'Tap a phrase to start';
+}
+
+// score = one point per pair, minus every wrong attempt and every revealed pair
+function s1Points() {
+  return Math.max(0, pairData.length - s1Wrong);
+}
+
+function finishEx1(msg) {
+  scores[0] = s1Points();
+  checked[0] = true;
+  navBtns[0].classList.add('done');
+  document.getElementById('reveal1').style.display = 'none';
+  document.getElementById('pair-progress').textContent = msg;
+  checkAllDone();
+}
+
+// Escape hatch: reveal whatever is left so nobody gets stuck on this section.
+function revealEx1() {
+  s1WordOrder.forEach((dataIdx, pos) => {
+    const wBtn = document.getElementById(`pw-${pos}`);
+    if (wBtn.classList.contains('matched-correct')) return;
+    const dBtn = document.getElementById(`pd-${s1DefOrder.indexOf(dataIdx)}`);
+    wBtn.classList.remove('selected', 'flash-wrong');
+    dBtn.classList.remove('selected', 'flash-wrong');
+    wBtn.classList.add('matched-correct');
+    dBtn.classList.add('matched-correct');
+    s1Wrong++;
+    mistakes.push(`"${pairData[dataIdx].phrase}" → ${pairData[dataIdx].def}`);
+  });
+  // line the two columns up so each phrase sits opposite its definition
+  const defCol = document.getElementById('pair-defs');
+  s1WordOrder.forEach(dataIdx => {
+    defCol.appendChild(document.getElementById(`pd-${s1DefOrder.indexOf(dataIdx)}`));
+  });
+  selectedWord = null;
+  selectedDef  = null;
+  s1Score = pairData.length;
+  document.getElementById('score1').textContent = `${s1Score} / 8`;
+  document.getElementById('wrong1').textContent = s1Wrong;
+  finishEx1('Answers shown — check the pairs above');
 }
 
 function tapWord(pos) {
@@ -605,24 +682,25 @@ function tryPair() {
     wBtn.classList.add('matched-correct');
     dBtn.classList.add('matched-correct');
     s1Score++;
-    scores[0] = s1Score;
+    scores[0] = s1Points();
     document.getElementById('score1').textContent = `${s1Score} / 8`;
-    if (s1Score === 8) {
-      checked[0] = true;
-      navBtns[0].classList.add('done');
-      document.getElementById('pair-progress').textContent = '🎉 All matched!';
-      checkAllDone();
+    if (s1Score === pairData.length) {
+      finishEx1(s1Wrong === 0 ? '🎉 All matched, no mistakes!' : '🎉 All matched!');
     } else {
       document.getElementById('pair-progress').textContent = `${s1Score} matched — keep going!`;
     }
   } else {
+    s1Wrong++;
+    scores[0] = s1Points();
+    document.getElementById('wrong1').textContent = s1Wrong;
+    mistakes.push(`"${pairData[wordDataIdx].phrase}" → ${pairData[wordDataIdx].def}`);
     wBtn.classList.add('flash-wrong');
     dBtn.classList.add('flash-wrong');
     setTimeout(() => {
       wBtn.classList.remove('flash-wrong', 'selected');
       dBtn.classList.remove('flash-wrong', 'selected');
     }, 600);
-    document.getElementById('pair-progress').textContent = 'Not quite — try again';
+    document.getElementById('pair-progress').textContent = 'Not quite — try again (counted)';
   }
 }
 
@@ -796,32 +874,22 @@ function resetEx3() {
 // RESULTS
 // ═══════════════════════════════════════
 function checkAllDone() {
-  if (checked.every(c => c)) {
-    if (document.getElementById('see-results-btn')) return;
-    const btn = document.createElement('button');
-    btn.id = 'see-results-btn';
-    btn.className = 'btn btn-check';
-    btn.style.cssText = 'display:block;width:100%;margin-bottom:20px;padding:12px 32px;font-size:1rem;';
-    btn.textContent = '🏁 See Results';
-    btn.onclick = showResults;
-    // Insert after the score bar of the currently active exercise
-    const activeEx = document.querySelector('.exercise.active');
-    const scoreBar = activeEx && activeEx.querySelector('.score-bar');
-    if (scoreBar) {
-      scoreBar.insertAdjacentElement('afterend', btn);
-    }
-  }
+  if (!checked.every(c => c)) return;
+  document.getElementById('results-bar').classList.add('show');
+  document.body.classList.add('has-results-bar');
 }
 
 function removeSeeResults() {
-  const old = document.getElementById('see-results-btn');
-  if (old) old.remove();
+  document.getElementById('results-bar').classList.remove('show');
+  document.body.classList.remove('has-results-bar');
 }
 
 function showResults() {
   document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
   navBtns.forEach(b => b.classList.remove('active'));
   document.getElementById('results').classList.add('active');
+  removeSeeResults();
+  window.scrollTo(0, 0);
 
   document.getElementById('r1').textContent = `${scores[0]}/8`;
   document.getElementById('r2').textContent = `${scores[1]}/8`;
@@ -848,7 +916,7 @@ function showResults() {
       total: total,
       max: max,
       student: student,
-      mistakes: mistakes
+      mistakes: [...new Set(mistakes)]
     })
   }).catch(() => {});
 }
