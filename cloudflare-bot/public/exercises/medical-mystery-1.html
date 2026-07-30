@@ -327,7 +327,7 @@
     <h2>Section 4 — Complete the gaps</h2>
     <p class="instructions">Each gap shows the first letter of every missing word — one underscore per remaining letter.</p>
     <div class="score-bar">
-      <span class="score-text">Score: <span id="score4">0 / 11</span></span>
+      <span class="score-text">Score: <span id="score4">0 / 15</span></span>
       <div class="btn-group">
         <button class="btn btn-reset" onclick="resetEx4()">Reset</button>
         <button class="btn btn-check" onclick="checkEx4()">Check</button>
@@ -473,7 +473,8 @@ const transData = [
   },
   {
     segs: [
-      { t: "His symptoms were so unusual that they didn't" }, { a: "fit into the box" },
+      { t: "His symptoms were so unusual that they didn't" },
+      { a: "fit into the box", alt: ["fit in the box"] },
       { t: "of any standard diagnosis." }
     ],
     ru: "вписываться в рамки"
@@ -498,22 +499,22 @@ const transData = [
 const gapData = [
   {
     segs: [
-      { t: "The scan results came back completely clear," }, { a: "much to", h: "m___ t_" },
+      { t: "The scan results came back completely clear, much" }, { a: "to", h: "t_" },
       { t: "his family's" }, { a: "delight", h: "d______" }, { t: "." }
     ]
   },
   {
     segs: [
       { t: "A severe allergic reaction to penicillin as a child had" }, { a: "made", h: "m___" },
-      { t: "her" }, { a: "wary of", h: "w___ o_" },
-      { t: "taking any antibiotics without checking first." }
+      { t: "her" }, { a: "wary", h: "w___" },
+      { t: "of taking any antibiotics without checking first." }
     ]
   },
   {
     segs: [
-      { t: "Before finally receiving her fibromyalgia diagnosis, she had" },
-      { a: "gone through a grinding process", h: "g___ t______ a g_______ p______" },
-      { t: "of referrals and misdiagnoses." }
+      { t: "Before finally receiving her fibromyalgia diagnosis, she had gone" },
+      { a: "through", h: "t______" }, { t: "a" }, { a: "grinding", h: "g_______" },
+      { t: "process of referrals and misdiagnoses." }
     ]
   },
   {
@@ -531,19 +532,20 @@ const gapData = [
   {
     segs: [
       { t: "The consultant explained the risks and alternatives so that the patient could" },
-      { a: "make informed decisions", h: "m___ i_______ d________" }, { t: "." }
+      { a: "make", h: "m___" }, { t: "informed" }, { a: "decisions", h: "d________" }, { t: "." }
     ]
   },
   {
     segs: [
       { t: "Chronic stress combined with a poor diet had" }, { a: "driven", h: "d_____" },
-      { t: "his blood pressure" }, { a: "sky high", h: "s__ h___" }, { t: "." }
+      { t: "his blood pressure" }, { a: "sky", h: "s__" }, { t: "high." }
     ]
   },
   {
     segs: [
       { t: "When standard treatment failed, the neurologist admitted he needed to" },
-      { a: "look outside his scope of experience", h: "l___ o______ h__ s____ o_ e_________" }, { t: "." }
+      { a: "look", h: "l___" }, { t: "outside his" }, { a: "scope", h: "s____" },
+      { t: "of" }, { a: "experience", h: "e_________" }, { t: "." }
     ]
   },
 ];
@@ -744,7 +746,7 @@ function buildGapSection(containerId, data, prefix, showRu) {
         sent.appendChild(document.createTextNode(lead + seg.t + ' '));
       } else {
         const gid = answers.length;
-        answers.push({ answer: seg.a, item: i });
+        answers.push({ answer: seg.a, alts: seg.alt || [], item: i });
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'gap-input';
@@ -793,7 +795,8 @@ function checkGapSection(data, answers, prefix, scoreIdx, scoreElId) {
   answers.forEach((entry, gid) => {
     const input = document.querySelector(`.gap-input[data-grp="${prefix}"][data-gid="${gid}"]`);
     input.classList.add('disabled');
-    if (normalise(input.value) === normalise(entry.answer)) {
+    const accepted = [entry.answer, ...entry.alts].map(normalise);
+    if (accepted.includes(normalise(input.value))) {
       score++;
       input.classList.add('correct-input');
     } else {
@@ -918,6 +921,11 @@ buildEx1();
 buildEx2();
 buildEx3();
 buildEx4();
+
+// keep the "0 / N" labels tied to the data, so editing a section can't leave them stale
+['score1','score2','score3','score4'].forEach((id, i) => {
+  document.getElementById(id).textContent = `0 / ${MAXES[i]}`;
+});
 </script>
 </body>
 </html>
