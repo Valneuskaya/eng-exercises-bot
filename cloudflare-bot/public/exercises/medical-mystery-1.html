@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Mystery — Diagnosis Vocabulary</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--tg-theme-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; }
+
+  h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
+
+  .subtitle {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--tg-theme-button-color, #6c63ff);
+    background: var(--tg-theme-secondary-bg-color, white);
+    color: var(--tg-theme-button-color, #6c63ff);
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { opacity: 0.85; }
+  .nav-btn.active { background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .nav-btn .check { display: none; margin-left: 4px; }
+  .nav-btn.done .check { display: inline; }
+
+  /* ── PANELS ── */
+  .exercise {
+    display: none;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .exercise.active { display: block; }
+
+  .exercise h2 {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: var(--tg-theme-button-color, #6c63ff);
+  }
+
+  .instructions {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  /* ── SCORE BAR ── */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 10px;
+  }
+  .score-text { font-weight: 600; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-check { background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .btn-check:hover { opacity: 0.85; }
+  .btn-reset { background: var(--tg-theme-bg-color, #e8e6ff); color: var(--tg-theme-button-color, #6c63ff); }
+  .btn-reset:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 8px; }
+
+  /* ── SECTIONS 1 & 2: TAP-TO-CHOOSE ── */
+  .match-item {
+    padding: 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+  .match-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .match-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .match-phrase {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--tg-theme-text-color, #1a1a2e);
+  }
+
+  .match-options { display: flex; flex-direction: column; gap: 6px; }
+
+  .match-option {
+    padding: 10px 14px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .match-option:hover { border-color: var(--tg-theme-button-color, #6c63ff); }
+  .match-option.selected { border-color: var(--tg-theme-button-color, #6c63ff); background: var(--tg-theme-button-color, #6c63ff); color: var(--tg-theme-button-text-color, white); }
+  .match-option.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .match-option.incorrect-opt { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .match-option.disabled { pointer-events: none; }
+
+  .match-answer {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .match-answer.show { display: block; }
+
+  /* ── SECTIONS 3 & 4: SENTENCES WITH INLINE GAPS ── */
+  .tr-item {
+    padding: 14px 16px;
+    border: 1px solid var(--tg-theme-hint-color, #eee);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+  }
+  .tr-item.correct { border-color: #4caf50; background: rgba(76,175,80,0.15); }
+  .tr-item.incorrect { border-color: #ef5350; background: rgba(239,83,80,0.15); }
+
+  .tr-sentence {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #1a1a2e);
+    line-height: 2.4;
+  }
+
+  .tr-ru {
+    display: block;
+    margin-top: 8px;
+    color: var(--tg-theme-button-color, #6c63ff);
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  .gap-input {
+    padding: 4px 8px;
+    border: 2px solid var(--tg-theme-hint-color, #e0dcff);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    color: var(--tg-theme-text-color, #1a1a2e);
+    transition: border-color 0.2s;
+    max-width: 100%;
+  }
+  .gap-input::placeholder { color: var(--tg-theme-hint-color, #999); letter-spacing: 0.5px; }
+  .gap-input:focus { outline: none; border-color: var(--tg-theme-button-color, #6c63ff); }
+  .gap-input.correct-input { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+  .gap-input.incorrect-input { border-color: #ef5350; background: rgba(239,83,80,0.15); color: #ef5350; }
+  .gap-input.disabled { pointer-events: none; }
+
+  .tr-answer {
+    display: none;
+    font-size: 0.82rem;
+    color: #66bb6a;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .tr-answer.show { display: block; }
+
+  /* ── RESULTS ── */
+  .final-results {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--tg-theme-secondary-bg-color, white);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .final-results.active { display: block; }
+  .final-results h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--tg-theme-button-color, #6c63ff); }
+
+  .result-grid {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .result-card {
+    background: var(--tg-theme-bg-color, #f8f7ff);
+    border-radius: 12px;
+    padding: 16px 24px;
+    min-width: 110px;
+  }
+  .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); margin-bottom: 4px; }
+  .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
+  .total-score { font-size: 1.1rem; font-weight: 600; margin-bottom: 24px; color: var(--tg-theme-text-color, #1a1a2e); }
+
+  /* ── STICKY "SEE RESULTS" BAR ──
+     Fixed to the viewport so it can't be scrolled past on a phone. */
+  .results-bar {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 100;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--tg-theme-secondary-bg-color, white);
+    box-shadow: 0 -2px 14px rgba(0,0,0,0.18);
+  }
+  .results-bar.show { display: block; }
+  .results-bar button {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 14px 32px;
+    font-size: 1rem;
+  }
+  /* leave room so the bar never covers the last question */
+  body.has-results-bar { padding-bottom: 96px; }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .exercise { padding: 20px 16px; }
+    .nav-btn { padding: 8px 14px; font-size: 0.82rem; }
+    .match-option { font-size: 0.8rem; padding: 9px 12px; }
+    .tr-sentence { font-size: 0.88rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Medical Mystery</h1>
+  <p class="subtitle">diagnosis vocabulary · 4 sections</p>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showExercise(0)">1. Definitions <span class="check">✓</span></button>
+    <button class="nav-btn" onclick="showExercise(1)">2. Odd One Out <span class="check">✓</span></button>
+    <button class="nav-btn" onclick="showExercise(2)">3. Translate <span class="check">✓</span></button>
+    <button class="nav-btn" onclick="showExercise(3)">4. Gap-fill <span class="check">✓</span></button>
+  </nav>
+
+  <!-- ══ SECTION 1 ══ -->
+  <div class="exercise active" id="ex1">
+    <h2>Section 1 — Choose the correct definition</h2>
+    <p class="instructions">Tap the correct definition for each phrase. The wrong options are close — read them all.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score1">0 / 8</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx1()">Check</button>
+      </div>
+    </div>
+    <div id="match-items"></div>
+  </div>
+
+  <!-- ══ SECTION 2 ══ -->
+  <div class="exercise" id="ex2">
+    <h2>Section 2 — Which expression does NOT belong?</h2>
+    <p class="instructions">Two of the three are close in meaning. Tap the odd one out.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score2">0 / 4</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx2()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx2()">Check</button>
+      </div>
+    </div>
+    <div id="odd-items"></div>
+  </div>
+
+  <!-- ══ SECTION 3 ══ -->
+  <div class="exercise" id="ex3">
+    <h2>Section 3 — Complete with the translation</h2>
+    <p class="instructions">Fill each gap in English. The Russian under the sentence is your only clue — no letters given.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score3">0 / 9</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx3()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx3()">Check</button>
+      </div>
+    </div>
+    <div id="tr-items"></div>
+  </div>
+
+  <!-- ══ SECTION 4 ══ -->
+  <div class="exercise" id="ex4">
+    <h2>Section 4 — Complete the gaps</h2>
+    <p class="instructions">Each gap shows the first letter of every missing word — one underscore per remaining letter.</p>
+    <div class="score-bar">
+      <span class="score-text">Score: <span id="score4">0 / 11</span></span>
+      <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetEx4()">Reset</button>
+        <button class="btn btn-check" onclick="checkEx4()">Check</button>
+      </div>
+    </div>
+    <div id="gap-items"></div>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div class="final-results" id="results">
+    <h2>🎉 Results</h2>
+    <div class="result-grid">
+      <div class="result-card"><div class="label">Definitions</div><div class="value" id="r1">—</div></div>
+      <div class="result-card"><div class="label">Odd One Out</div><div class="value" id="r2">—</div></div>
+      <div class="result-card"><div class="label">Translate</div><div class="value" id="r3">—</div></div>
+      <div class="result-card"><div class="label">Gap-fill</div><div class="value" id="r4">—</div></div>
+    </div>
+    <div class="total-score" id="total-score"></div>
+    <button class="btn btn-check" style="padding:12px 32px;font-size:1rem;" onclick="fullReset()">Try Again</button>
+  </div>
+
+</div>
+
+<div class="results-bar" id="results-bar">
+  <button class="btn btn-check" onclick="showResults()">🏁 See Results</button>
+</div>
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+if (tg?.BackButton) {
+  tg.BackButton.show();
+  tg.BackButton.onClick(() => { window.location.href = '../'; });
+}
+
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+// Section 1 — phrase + correct definition + two near-miss distractors
+const matchData = [
+  {
+    phrase: "to zero in on",
+    def: "to focus closely on one specific thing, especially after searching",
+    distractors: ["to gradually lose interest in a line of investigation", "to cancel something completely"]
+  },
+  {
+    phrase: "the root of sth",
+    def: "the true, underlying cause of a problem",
+    distractors: ["the earliest symptom a patient noticed", "the standard first step in a treatment plan"]
+  },
+  {
+    phrase: "to be baffled by",
+    def: "to be completely confused, unable to explain something",
+    distractors: ["to be annoyed or irritated by something", "to be pleasantly surprised by something"]
+  },
+  {
+    phrase: "to go through a grinding process",
+    def: "to experience a long, exhausting, frustrating procedure",
+    distractors: ["to undergo a quick but very painful procedure", "to work steadily through a checklist of routine tests"]
+  },
+  {
+    phrase: "to make sb wary of sth",
+    def: "to cause someone to be cautious or suspicious about it",
+    distractors: ["to make someone tired of doing something", "to warn someone officially about a risk"]
+  },
+  {
+    phrase: "to drive sth sky high",
+    def: "to cause a level or number to rise dramatically",
+    distractors: ["to keep a level stable at a safe upper limit", "to raise someone's hopes unrealistically"]
+  },
+  {
+    phrase: "horses, not zebras",
+    def: "look for the common explanation first, not the rare one",
+    distractors: ["trust the patient's own account before the test results", "treat the symptom you can see before investigating further"]
+  },
+  {
+    phrase: "to fit into the box",
+    def: "to match a standard, expected pattern or category",
+    distractors: ["to be small enough to ignore clinically", "to fill in a form or record correctly"]
+  },
+];
+
+// Section 2 — odd one out. Options stay in lesson order: the explanations
+// refer to their positions ("the first two", "the first and third").
+const oddData = [
+  {
+    options: ["take a break from", "put sth on hold", "cut off"],
+    answer: "cut off",
+    why: "The first two pause something temporarily — “cut off” stops it completely."
+  },
+  {
+    options: ["zero in on", "rule out", "the root of sth"],
+    answer: "rule out",
+    why: "“Rule out” eliminates a possibility — the other two move towards the cause."
+  },
+  {
+    options: ["advocate for sb/sth", "make informed decisions", "seek second opinions"],
+    answer: "advocate for sb/sth",
+    why: "The last two are things patients do for themselves — you advocate for someone else."
+  },
+  {
+    options: ["fit into the box", "look outside their scope of experience", "horses, not zebras"],
+    answer: "look outside their scope of experience",
+    why: "The first and third stay inside standard thinking — this one deliberately leaves it."
+  },
+];
+
+// Section 3 — Russian cue, no letter hints
+const transData = [
+  {
+    segs: [
+      { t: "She had to" }, { a: "put" }, { t: "her physiotherapy" }, { a: "on hold" },
+      { t: "when a sudden infection landed her back in hospital." }
+    ],
+    ru: "отложить, поставить на паузу"
+  },
+  {
+    segs: [
+      { t: "After weeks of inconclusive tests, the specialist finally" }, { a: "zeroed in on" },
+      { t: "a rare autoimmune condition as the likely cause." }
+    ],
+    ru: "сосредоточиться на; выйти на что-то (в поиске)"
+  },
+  {
+    segs: [
+      { t: "After months of treating the symptoms, the gastroenterologist finally identified a gluten intolerance as" },
+      { a: "the root of" }, { t: "his digestive problems." }
+    ],
+    ru: "первопричина чего-либо"
+  },
+  {
+    segs: [
+      { t: "Even the senior consultants" }, { a: "were baffled by" }, { t: "his rapid recovery." }
+    ],
+    ru: "быть озадаченным, сбитым с толку"
+  },
+  {
+    segs: [
+      { t: "Faced with a recommendation for immediate spinal surgery, he decided to" }, { a: "seek second opinions" },
+      { t: "before agreeing to go under the knife." }
+    ],
+    ru: "обратиться за вторым мнением"
+  },
+  {
+    segs: [
+      { t: "His symptoms were so unusual that they didn't" }, { a: "fit into the box" },
+      { t: "of any standard diagnosis." }
+    ],
+    ru: "вписываться в рамки"
+  },
+  {
+    segs: [
+      { t: "When the elderly patient struggled to communicate, her daughter stepped in to" }, { a: "advocate for" },
+      { t: "her." }
+    ],
+    ru: "отстаивать чьи-либо интересы"
+  },
+  {
+    segs: [
+      { t: "After his third chemotherapy session, the doctor advised him to" }, { a: "take a break from" },
+      { t: "intense physical activity." }
+    ],
+    ru: "сделать перерыв в чём-либо"
+  },
+];
+
+// Section 4 — first-letter hints, one underscore per remaining letter
+const gapData = [
+  {
+    segs: [
+      { t: "The scan results came back completely clear," }, { a: "much to", h: "m___ t_" },
+      { t: "his family's" }, { a: "delight", h: "d______" }, { t: "." }
+    ]
+  },
+  {
+    segs: [
+      { t: "A severe allergic reaction to penicillin as a child had" }, { a: "made", h: "m___" },
+      { t: "her" }, { a: "wary of", h: "w___ o_" },
+      { t: "taking any antibiotics without checking first." }
+    ]
+  },
+  {
+    segs: [
+      { t: "Before finally receiving her fibromyalgia diagnosis, she had" },
+      { a: "gone through a grinding process", h: "g___ t______ a g_______ p______" },
+      { t: "of referrals and misdiagnoses." }
+    ]
+  },
+  {
+    segs: [
+      { t: "The cardiologist" }, { a: "ruled out", h: "r____ o__" },
+      { t: "a heart attack early on, but the chest pain remained unexplained." }
+    ]
+  },
+  {
+    segs: [
+      { t: "The blood clot had partially" }, { a: "cut off", h: "c__ o__" },
+      { t: "circulation to his left leg." }
+    ]
+  },
+  {
+    segs: [
+      { t: "The consultant explained the risks and alternatives so that the patient could" },
+      { a: "make informed decisions", h: "m___ i_______ d________" }, { t: "." }
+    ]
+  },
+  {
+    segs: [
+      { t: "Chronic stress combined with a poor diet had" }, { a: "driven", h: "d_____" },
+      { t: "his blood pressure" }, { a: "sky high", h: "s__ h___" }, { t: "." }
+    ]
+  },
+  {
+    segs: [
+      { t: "When standard treatment failed, the neurologist admitted he needed to" },
+      { a: "look outside his scope of experience", h: "l___ o______ h__ s____ o_ e_________" }, { t: "." }
+    ]
+  },
+];
+
+const S3_GAPS = transData.reduce((n, it) => n + it.segs.filter(s => s.a !== undefined).length, 0);
+const S4_GAPS = gapData.reduce((n, it) => n + it.segs.filter(s => s.a !== undefined).length, 0);
+const MAXES = [matchData.length, oddData.length, S3_GAPS, S4_GAPS];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const navBtns = document.querySelectorAll('.nav-btn');
+let scores  = [0, 0, 0, 0];
+let checked = [false, false, false, false];
+let mistakes = [];
+
+let ex1Selections = new Array(matchData.length).fill(null);
+let ex2Selections = new Array(oddData.length).fill(null);
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// case-insensitive, extra spaces ignored — otherwise the exact form is required
+function normalise(str) {
+  return str.trim().toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ');
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showExercise(idx) {
+  document.querySelectorAll('.exercise, .final-results').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById(['ex1','ex2','ex3','ex4'][idx]).classList.add('active');
+  navBtns[idx].classList.add('active');
+  window.scrollTo(0, 0);
+  checkAllDone(); // bring the bar back if they return from the results screen
+}
+
+// ═══════════════════════════════════════
+// SECTIONS 1 & 2: TAP-TO-CHOOSE
+// ═══════════════════════════════════════
+
+// Shared renderer. `prefix` keeps the two sections' DOM ids apart.
+function buildChoice(containerId, data, prefix, onSelect, getOptions, getPrompt) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'match-item';
+    div.id = `${prefix}i-${i}`;
+
+    const phraseEl = document.createElement('div');
+    phraseEl.className = 'match-phrase';
+    phraseEl.textContent = `${i + 1}. ${getPrompt(item)}`;
+    div.appendChild(phraseEl);
+
+    const opts = document.createElement('div');
+    opts.className = 'match-options';
+    getOptions(item).forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'match-option';
+      btn.textContent = opt;
+      btn.dataset.mq = i;
+      btn.dataset.val = opt;
+      btn.dataset.grp = prefix;
+      btn.onclick = () => onSelect(btn, i, opt);
+      opts.appendChild(btn);
+    });
+    div.appendChild(opts);
+
+    const answer = document.createElement('div');
+    answer.className = 'match-answer';
+    answer.id = `${prefix}a-${i}`;
+    div.appendChild(answer);
+
+    container.appendChild(div);
+  });
+}
+
+function selectOption(btn, i, val, prefix, store) {
+  if (btn.classList.contains('disabled')) return;
+  document.querySelectorAll(`.match-option[data-grp="${prefix}"][data-mq="${i}"]`)
+    .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  store[i] = val;
+}
+
+// Grades a tap-to-choose section. `right` returns the correct value for an item,
+// `note` builds the line shown under a wrong answer.
+function checkChoice(data, prefix, store, scoreIdx, scoreElId, right, note) {
+  let score = 0;
+  data.forEach((item, i) => {
+    const buttons = document.querySelectorAll(`.match-option[data-grp="${prefix}"][data-mq="${i}"]`);
+    const wrapper = document.getElementById(`${prefix}i-${i}`);
+    const correct = right(item);
+    buttons.forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.dataset.val === correct) btn.classList.add('correct-opt');
+    });
+    if (store[i] === correct) {
+      score++;
+      wrapper.classList.add('correct');
+    } else {
+      wrapper.classList.add('incorrect');
+      buttons.forEach(btn => {
+        if (btn.dataset.val === store[i]) btn.classList.add('incorrect-opt');
+      });
+      const label = document.getElementById(`${prefix}a-${i}`);
+      label.textContent = note(item);
+      label.classList.add('show');
+      mistakes.push(note(item));
+    }
+  });
+  scores[scoreIdx] = score;
+  checked[scoreIdx] = true;
+  document.getElementById(scoreElId).textContent = `${score} / ${MAXES[scoreIdx]}`;
+  navBtns[scoreIdx].classList.add('done');
+  checkAllDone();
+}
+
+function resetChoice(data, prefix, store, scoreIdx, scoreElId) {
+  store.fill(null);
+  data.forEach((_, i) => {
+    document.getElementById(`${prefix}i-${i}`).classList.remove('correct', 'incorrect');
+    document.querySelectorAll(`.match-option[data-grp="${prefix}"][data-mq="${i}"]`).forEach(btn => {
+      btn.classList.remove('selected', 'correct-opt', 'incorrect-opt', 'disabled');
+    });
+    const label = document.getElementById(`${prefix}a-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[scoreIdx] = 0; checked[scoreIdx] = false;
+  document.getElementById(scoreElId).textContent = `0 / ${MAXES[scoreIdx]}`;
+  navBtns[scoreIdx].classList.remove('done');
+  removeSeeResults();
+}
+
+function buildEx1() {
+  buildChoice('match-items', matchData, 'm',
+    (btn, i, opt) => selectOption(btn, i, opt, 'm', ex1Selections),
+    item => shuffle([item.def, ...item.distractors]),
+    item => item.phrase);
+}
+function checkEx1() {
+  checkChoice(matchData, 'm', ex1Selections, 0, 'score1',
+    item => item.def,
+    item => `“${item.phrase}” → ${item.def}`);
+}
+function resetEx1() { resetChoice(matchData, 'm', ex1Selections, 0, 'score1'); }
+
+function buildEx2() {
+  buildChoice('odd-items', oddData, 'o',
+    (btn, i, opt) => selectOption(btn, i, opt, 'o', ex2Selections),
+    item => item.options,          // kept in order — the explanations depend on it
+    () => 'Which one does NOT belong?');
+}
+function checkEx2() {
+  checkChoice(oddData, 'o', ex2Selections, 1, 'score2',
+    item => item.answer,
+    item => `Odd one out: ${item.answer} — ${item.why}`);
+}
+function resetEx2() { resetChoice(oddData, 'o', ex2Selections, 1, 'score2'); }
+
+// ═══════════════════════════════════════
+// SECTIONS 3 & 4: SENTENCES WITH INLINE GAPS
+// ═══════════════════════════════════════
+
+// Sentences are built from segments: { t: "plain text" } or { a: "answer", h: "hint" }.
+// Returns the flat list of answers in order, which is what the checker grades.
+function buildGapSection(containerId, data, prefix, showRu) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const answers = [];
+
+  data.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'tr-item';
+    div.id = `${prefix}i-${i}`;
+
+    const sent = document.createElement('div');
+    sent.className = 'tr-sentence';
+    sent.appendChild(document.createTextNode(`${i + 1}. `));
+
+    item.segs.forEach(seg => {
+      if (seg.t !== undefined) {
+        // no space before closing punctuation, so a trailing gap reads "…decisions."
+        const lead = /^[.,;:!?]/.test(seg.t) ? '' : ' ';
+        sent.appendChild(document.createTextNode(lead + seg.t + ' '));
+      } else {
+        const gid = answers.length;
+        answers.push({ answer: seg.a, item: i });
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'gap-input';
+        input.dataset.gid = gid;
+        input.dataset.grp = prefix;
+        input.autocomplete = 'off';
+        input.setAttribute('autocapitalize', 'off');
+        input.spellcheck = false;
+        if (seg.h) {
+          input.placeholder = seg.h;
+          // wide enough to show the whole hint
+          input.style.width = Math.min(420, seg.h.length * 9 + 28) + 'px';
+        } else {
+          // one fixed width for every gap — a width that fits the answer would
+          // give away how long it is, and this section has no hints on purpose
+          input.style.width = '200px';
+        }
+        sent.appendChild(input);
+      }
+    });
+
+    div.appendChild(sent);
+
+    if (showRu) {
+      const ru = document.createElement('span');
+      ru.className = 'tr-ru';
+      ru.textContent = item.ru;
+      div.appendChild(ru);
+    }
+
+    const answer = document.createElement('div');
+    answer.className = 'tr-answer';
+    answer.id = `${prefix}a-${i}`;
+    div.appendChild(answer);
+
+    container.appendChild(div);
+  });
+
+  return answers;
+}
+
+function checkGapSection(data, answers, prefix, scoreIdx, scoreElId) {
+  let score = 0;
+  const wrongByItem = {};
+
+  answers.forEach((entry, gid) => {
+    const input = document.querySelector(`.gap-input[data-grp="${prefix}"][data-gid="${gid}"]`);
+    input.classList.add('disabled');
+    if (normalise(input.value) === normalise(entry.answer)) {
+      score++;
+      input.classList.add('correct-input');
+    } else {
+      input.classList.add('incorrect-input');
+      (wrongByItem[entry.item] = wrongByItem[entry.item] || []).push(entry.answer);
+    }
+  });
+
+  data.forEach((item, i) => {
+    const wrapper = document.getElementById(`${prefix}i-${i}`);
+    if (wrongByItem[i]) {
+      wrapper.classList.add('incorrect');
+      const label = document.getElementById(`${prefix}a-${i}`);
+      label.textContent = `Correct: ${wrongByItem[i].join(' … ')}`;
+      label.classList.add('show');
+      mistakes.push(`${i + 1}. ${wrongByItem[i].join(' … ')}`);
+    } else {
+      wrapper.classList.add('correct');
+    }
+  });
+
+  scores[scoreIdx] = score;
+  checked[scoreIdx] = true;
+  document.getElementById(scoreElId).textContent = `${score} / ${MAXES[scoreIdx]}`;
+  navBtns[scoreIdx].classList.add('done');
+  checkAllDone();
+}
+
+function resetGapSection(data, answers, prefix, scoreIdx, scoreElId) {
+  answers.forEach((_, gid) => {
+    const input = document.querySelector(`.gap-input[data-grp="${prefix}"][data-gid="${gid}"]`);
+    input.value = '';
+    input.classList.remove('correct-input', 'incorrect-input', 'disabled');
+  });
+  data.forEach((_, i) => {
+    document.getElementById(`${prefix}i-${i}`).classList.remove('correct', 'incorrect');
+    const label = document.getElementById(`${prefix}a-${i}`);
+    label.textContent = '';
+    label.classList.remove('show');
+  });
+  scores[scoreIdx] = 0; checked[scoreIdx] = false;
+  document.getElementById(scoreElId).textContent = `0 / ${MAXES[scoreIdx]}`;
+  navBtns[scoreIdx].classList.remove('done');
+  removeSeeResults();
+}
+
+let trAnswers = [];
+let gapAnswers = [];
+
+function buildEx3() { trAnswers = buildGapSection('tr-items', transData, 't', true); }
+function checkEx3() { checkGapSection(transData, trAnswers, 't', 2, 'score3'); }
+function resetEx3() { resetGapSection(transData, trAnswers, 't', 2, 'score3'); }
+
+function buildEx4() { gapAnswers = buildGapSection('gap-items', gapData, 'g', false); }
+function checkEx4() { checkGapSection(gapData, gapAnswers, 'g', 3, 'score4'); }
+function resetEx4() { resetGapSection(gapData, gapAnswers, 'g', 3, 'score4'); }
+
+// ═══════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════
+function checkAllDone() {
+  if (!checked.every(c => c)) return;
+  document.getElementById('results-bar').classList.add('show');
+  document.body.classList.add('has-results-bar');
+}
+
+function removeSeeResults() {
+  document.getElementById('results-bar').classList.remove('show');
+  document.body.classList.remove('has-results-bar');
+}
+
+function showResults() {
+  document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  removeSeeResults();
+  window.scrollTo(0, 0);
+
+  ['r1','r2','r3','r4'].forEach((id, i) => {
+    document.getElementById(id).textContent = `${scores[i]}/${MAXES[i]}`;
+  });
+
+  const total = scores.reduce((a, b) => a + b, 0);
+  const max = MAXES.reduce((a, b) => a + b, 0);
+  const pct = Math.round((total / max) * 100);
+  document.getElementById('total-score').textContent = `Total: ${total} / ${max} (${pct}%)`;
+
+  const student = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.first_name : 'Unknown';
+
+  fetch('https://eng-exercises-bot.vercel.app/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      exercise: 'Medical Mystery — Diagnosis Vocabulary',
+      scores: {
+        'Definitions': scores[0],
+        'Odd One Out': scores[1],
+        'Translation': scores[2],
+        'Gap-fill': scores[3]
+      },
+      total: total,
+      max: max,
+      student: student,
+      mistakes: [...new Set(mistakes)]
+    })
+  }).catch(() => {});
+}
+
+function fullReset() {
+  resetEx1(); resetEx2(); resetEx3(); resetEx4();
+  mistakes = [];
+  removeSeeResults();
+  document.getElementById('results').classList.remove('active');
+  showExercise(0);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+buildEx1();
+buildEx2();
+buildEx3();
+buildEx4();
+</script>
+</body>
+</html>
