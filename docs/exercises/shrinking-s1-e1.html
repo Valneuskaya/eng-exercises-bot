@@ -141,6 +141,18 @@
     color: #4caf50;
     pointer-events: none;
   }
+  .pair-card.wrong-locked {
+    border-color: #ef5350;
+    background: rgba(239,83,80,0.15);
+    color: #ef5350;
+    pointer-events: none;
+  }
+  .pair-card.revealed {
+    border-color: #ff9800;
+    background: rgba(255,152,0,0.15);
+    color: #ff9800;
+    pointer-events: none;
+  }
   .pair-card.flash-wrong {
     border-color: #ef5350;
     background: rgba(239,83,80,0.15);
@@ -271,30 +283,6 @@
   .result-card .label { font-size: 0.8rem; color: var(--tg-theme-hint-color, #999); margin-bottom: 4px; }
   .result-card .value { font-size: 1.4rem; font-weight: 700; color: var(--tg-theme-button-color, #6c63ff); }
   .total-score { font-size: 1.1rem; font-weight: 600; margin-bottom: 24px; color: var(--tg-theme-text-color, #1a1a2e); }
-
-  /* ── STICKY "SEE RESULTS" BAR ──
-     Fixed to the viewport so it can't be scrolled past on a phone. */
-  .results-bar {
-    display: none;
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    z-index: 100;
-    padding: 12px 16px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: var(--tg-theme-secondary-bg-color, white);
-    box-shadow: 0 -2px 14px rgba(0,0,0,0.18);
-  }
-  .results-bar.show { display: block; }
-  .results-bar button {
-    display: block;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 14px 32px;
-    font-size: 1rem;
-  }
-  /* leave room so the bar never covers the last question */
-  body.has-results-bar { padding-bottom: 96px; }
 </style>
 </head>
 <body>
@@ -312,13 +300,10 @@
   <!-- ══ SECTION 1 ══ -->
   <div class="exercise active" id="ex1">
     <h2>Section 1 — Pair Up</h2>
-    <p class="instructions">Tap a phrase on the left, then tap its definition on the right.</p>
+    <p class="instructions">Tap a phrase on the left, then tap its definition on the right. You get one try per phrase — after a wrong answer the correct definition is shown.</p>
     <div class="score-bar">
-      <span class="score-text">Matched: <span id="score1">0 / 8</span> · Mistakes: <span id="wrong1">0</span></span>
-      <div class="btn-group">
-        <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
-        <button class="btn btn-check" id="reveal1" onclick="revealEx1()">Show answers</button>
-      </div>
+      <span class="score-text">Score: <span id="score1">0 / 8</span></span>
+      <button class="btn btn-reset" onclick="resetEx1()">Reset</button>
     </div>
     <div class="pair-progress" id="pair-progress">Tap a phrase to start</div>
     <div class="pair-arena">
@@ -367,10 +352,6 @@
     <button class="btn btn-check" style="padding:12px 32px;font-size:1rem;" onclick="fullReset()">Try Again</button>
   </div>
 
-</div>
-
-<div class="results-bar" id="results-bar">
-  <button class="btn btn-check" onclick="showResults()">🏁 See Results</button>
 </div>
 <script>
 const tg = window.Telegram?.WebApp;
@@ -530,12 +511,13 @@ const gapData = [
 const navBtns = document.querySelectorAll('.nav-btn');
 let scores  = [0, 0, 0];
 let checked = [false, false, false];
-let mistakes = [];
+let sectionMistakes = [[], [], []];
 
 let selectedWord = null;
 let selectedDef  = null;
-let s1Score  = 0;   // pairs matched
-let s1Wrong  = 0;   // wrong attempts + revealed pairs — each costs a point
+let s1Score = 0;       // pairs matched correctly on the first try
+let pairMatched = 0;   // pairs matched in total
+let pairMistaken = {}; // dataIdx -> true once the student has made a wrong attempt
 let s1WordOrder = [];
 let s1DefOrder  = [];
 
@@ -549,8 +531,6 @@ function showExercise(idx) {
   navBtns.forEach(b => b.classList.remove('active'));
   document.getElementById(['ex1','ex2','ex3'][idx]).classList.add('active');
   navBtns[idx].classList.add('active');
-  window.scrollTo(0, 0);
-  checkAllDone(); // bring the bar back if they return from the results screen
 }
 
 // ═══════════════════════════════════════
@@ -571,7 +551,9 @@ function buildEx1() {
   selectedWord = null;
   selectedDef  = null;
   s1Score = 0;
-  s1Wrong = 0;
+  pairMatched = 0;
+  pairMistaken = {};
+  sectionMistakes[0] = [];
 
   const wordCol = document.getElementById('pair-words');
   const defCol  = document.getElementById('pair-defs');
@@ -599,53 +581,11 @@ function buildEx1() {
   });
 
   document.getElementById('score1').textContent = '0 / 8';
-  document.getElementById('wrong1').textContent = '0';
-  document.getElementById('reveal1').style.display = '';
   document.getElementById('pair-progress').textContent = 'Tap a phrase to start';
 }
 
-// score = one point per pair, minus every wrong attempt and every revealed pair
-function s1Points() {
-  return Math.max(0, pairData.length - s1Wrong);
-}
-
-function finishEx1(msg) {
-  scores[0] = s1Points();
-  checked[0] = true;
-  navBtns[0].classList.add('done');
-  document.getElementById('reveal1').style.display = 'none';
-  document.getElementById('pair-progress').textContent = msg;
-  checkAllDone();
-}
-
-// Escape hatch: reveal whatever is left so nobody gets stuck on this section.
-function revealEx1() {
-  s1WordOrder.forEach((dataIdx, pos) => {
-    const wBtn = document.getElementById(`pw-${pos}`);
-    if (wBtn.classList.contains('matched-correct')) return;
-    const dBtn = document.getElementById(`pd-${s1DefOrder.indexOf(dataIdx)}`);
-    wBtn.classList.remove('selected', 'flash-wrong');
-    dBtn.classList.remove('selected', 'flash-wrong');
-    wBtn.classList.add('matched-correct');
-    dBtn.classList.add('matched-correct');
-    s1Wrong++;
-    mistakes.push(`"${pairData[dataIdx].phrase}" → ${pairData[dataIdx].def}`);
-  });
-  // line the two columns up so each phrase sits opposite its definition
-  const defCol = document.getElementById('pair-defs');
-  s1WordOrder.forEach(dataIdx => {
-    defCol.appendChild(document.getElementById(`pd-${s1DefOrder.indexOf(dataIdx)}`));
-  });
-  selectedWord = null;
-  selectedDef  = null;
-  s1Score = pairData.length;
-  document.getElementById('score1').textContent = `${s1Score} / 8`;
-  document.getElementById('wrong1').textContent = s1Wrong;
-  finishEx1('Answers shown — check the pairs above');
-}
-
 function tapWord(pos) {
-  if (document.getElementById(`pw-${pos}`).classList.contains('matched-correct')) return;
+  if (document.getElementById(`pw-${pos}`).classList.contains('matched-correct') || document.getElementById(`pw-${pos}`).classList.contains('wrong-locked')) return;
   if (selectedWord !== null) document.getElementById(`pw-${selectedWord}`).classList.remove('selected');
   selectedWord = pos;
   document.getElementById(`pw-${pos}`).classList.add('selected');
@@ -654,7 +594,7 @@ function tapWord(pos) {
 }
 
 function tapDef(pos) {
-  if (document.getElementById(`pd-${pos}`).classList.contains('matched-correct')) return;
+  if (document.getElementById(`pd-${pos}`).classList.contains('matched-correct') || document.getElementById(`pd-${pos}`).classList.contains('revealed')) return;
   if (selectedWord === null) {
     document.getElementById('pair-progress').textContent = '← First tap a phrase on the left';
     return;
@@ -667,41 +607,51 @@ function tapDef(pos) {
 
 function tryPair() {
   if (selectedWord === null || selectedDef === null) return;
-  const wordDataIdx = parseInt(document.getElementById(`pw-${selectedWord}`).dataset.idx);
-  const defDataIdx  = parseInt(document.getElementById(`pd-${selectedDef}`).dataset.idx);
   const wBtn = document.getElementById(`pw-${selectedWord}`);
   const dBtn = document.getElementById(`pd-${selectedDef}`);
-
-  const sw = selectedWord, sd = selectedDef;
   selectedWord = null;
   selectedDef  = null;
+  const wi = parseInt(wBtn.dataset.idx);
+  const progress = document.getElementById('pair-progress');
 
-  if (wordDataIdx === defDataIdx) {
-    wBtn.classList.remove('selected');
-    dBtn.classList.remove('selected');
+  pairMatched++; // every phrase gets exactly one try, so nobody can get stuck
+  wBtn.classList.remove('selected');
+  dBtn.classList.remove('selected');
+
+  if (wBtn.dataset.idx === dBtn.dataset.idx) {
     wBtn.classList.add('matched-correct');
     dBtn.classList.add('matched-correct');
     s1Score++;
-    scores[0] = s1Points();
-    document.getElementById('score1').textContent = `${s1Score} / 8`;
-    if (s1Score === pairData.length) {
-      finishEx1(s1Wrong === 0 ? '🎉 All matched, no mistakes!' : '🎉 All matched!');
-    } else {
-      document.getElementById('pair-progress').textContent = `${s1Score} matched — keep going!`;
-    }
+    scores[0] = s1Score;
+    document.getElementById('score1').textContent = `${s1Score} / ${pairData.length}`;
+    progress.textContent = `✓ Correct — ${pairMatched} of ${pairData.length} done`;
   } else {
-    s1Wrong++;
-    scores[0] = s1Points();
-    document.getElementById('wrong1').textContent = s1Wrong;
-    mistakes.push(`"${pairData[wordDataIdx].phrase}" → ${pairData[wordDataIdx].def}`);
-    wBtn.classList.add('flash-wrong');
+    pairMistaken[wi] = true;
+    sectionMistakes[0].push(`Pair: "${pairData[wi].phrase}" → ${pairData[wi].def}`);
+    // the answer is accepted as wrong: the phrase turns red and its correct meaning is revealed
+    wBtn.classList.add('wrong-locked');
+    const rightDef = document.querySelector(`#pair-defs .pair-card[data-idx="${wi}"]`);
+    if (rightDef) rightDef.classList.add('revealed');
+    // the meaning tapped by mistake stays available for the phrase it really belongs to
     dBtn.classList.add('flash-wrong');
-    setTimeout(() => {
-      wBtn.classList.remove('flash-wrong', 'selected');
-      dBtn.classList.remove('flash-wrong', 'selected');
-    }, 600);
-    document.getElementById('pair-progress').textContent = 'Not quite — try again (counted)';
+    setTimeout(() => dBtn.classList.remove('flash-wrong'), 700);
+    progress.textContent = `✗ "${pairData[wi].phrase}" means: ${pairData[wi].def}`;
   }
+
+  if (pairMatched === pairData.length) finishPair();
+}
+
+function finishPair() {
+  checked[0] = true;
+  navBtns[0].classList.add('done');
+  const progress = document.getElementById('pair-progress');
+  const summary = s1Score === pairData.length
+    ? '🎉 All matched correctly!'
+    : `Done — ${s1Score} of ${pairData.length} correct`;
+  progress.textContent = progress.textContent.startsWith('✗')
+    ? `${progress.textContent}  ·  ${summary}`
+    : summary;
+  checkAllDone();
 }
 
 function resetEx1() {
@@ -765,6 +715,7 @@ function selectMatch2(btn, i, val) {
 
 function checkEx2() {
   let score = 0;
+  sectionMistakes[1] = [];
   matchData.forEach((item, i) => {
     const buttons = document.querySelectorAll(`.match-option[data-mq="${i}"]`);
     const wrapper = document.getElementById(`mi-${i}`);
@@ -783,7 +734,7 @@ function checkEx2() {
       const label = document.getElementById(`ma2-${i}`);
       label.textContent = `Correct: ${item.def}`;
       label.classList.add('show');
-      mistakes.push(`"${item.phrase}" → ${item.def}`);
+      sectionMistakes[1].push(`"${item.phrase}" → ${item.def}`);
     }
   });
   scores[1] = score;
@@ -832,6 +783,7 @@ function normalise(str) {
 
 function checkEx3() {
   let score = 0;
+  sectionMistakes[2] = [];
   gapData.forEach((item, i) => {
     const input = document.querySelector(`.gap-input[data-gid="${i}"]`);
     const userVal = normalise(input.value);
@@ -845,7 +797,7 @@ function checkEx3() {
       const corr = document.getElementById(`corr-${i}`);
       corr.textContent = ` ${item.answer}`;
       corr.classList.add('show');
-      mistakes.push(`Gap ${i + 1} → ${item.answer}`);
+      sectionMistakes[2].push(`Gap ${i + 1} → ${item.answer}`);
     }
   });
   scores[2] = score;
@@ -875,21 +827,31 @@ function resetEx3() {
 // ═══════════════════════════════════════
 function checkAllDone() {
   if (!checked.every(c => c)) return;
-  document.getElementById('results-bar').classList.add('show');
-  document.body.classList.add('has-results-bar');
+  // Put the button at the top of every panel so it is visible whichever tab the student is on
+  ['ex1', 'ex2', 'ex3'].forEach(exId => {
+    if (document.getElementById(`see-results-btn-${exId}`)) return;
+    const btn = document.createElement('button');
+    btn.id = `see-results-btn-${exId}`;
+    btn.className = 'btn btn-check';
+    btn.style.cssText = 'display:block;width:100%;margin-bottom:20px;padding:12px 32px;font-size:1rem;';
+    btn.textContent = '🏁 See Results';
+    btn.onclick = showResults;
+    const scoreBar = document.getElementById(exId).querySelector('.score-bar');
+    if (scoreBar) scoreBar.insertAdjacentElement('afterend', btn);
+  });
 }
 
 function removeSeeResults() {
-  document.getElementById('results-bar').classList.remove('show');
-  document.body.classList.remove('has-results-bar');
+  ['ex1', 'ex2', 'ex3'].forEach(exId => {
+    const old = document.getElementById(`see-results-btn-${exId}`);
+    if (old) old.remove();
+  });
 }
 
 function showResults() {
   document.querySelectorAll('.exercise').forEach(el => el.classList.remove('active'));
   navBtns.forEach(b => b.classList.remove('active'));
   document.getElementById('results').classList.add('active');
-  removeSeeResults();
-  window.scrollTo(0, 0);
 
   document.getElementById('r1').textContent = `${scores[0]}/8`;
   document.getElementById('r2').textContent = `${scores[1]}/8`;
@@ -916,14 +878,14 @@ function showResults() {
       total: total,
       max: max,
       student: student,
-      mistakes: [...new Set(mistakes)]
+      mistakes: sectionMistakes.flat()
     })
   }).catch(() => {});
 }
 
 function fullReset() {
   resetEx1(); resetEx2(); resetEx3();
-  mistakes = [];
+  sectionMistakes = [[], [], []];
   removeSeeResults();
   document.getElementById('results').classList.remove('active');
   showExercise(0);
